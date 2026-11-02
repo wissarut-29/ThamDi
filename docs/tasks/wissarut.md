@@ -28,7 +28,11 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 | W6 | README 10 หัวข้อ · `RUNBOOK.md` · `DEMO_SCRIPT.md` (+ คำถามเดโม 5–7 ข้อ ส่งให้ Chalakorn) · ภาพหน้าจอทุกหน้า | 4 พ.ย. | ทำตาม README บนเครื่องใหม่แล้วรันได้จริง |
 | W7 | สไลด์ 12–15 หน้า · อัดคลิปเดโมสำรอง | 4 พ.ย. ค่ำ – 5 พ.ย. เช้า | สไลด์ + คลิปพร้อม |
 
-**เริ่มได้ทันที:** W2 (ไม่ต้องรอใคร) · W3 ใช้รูปแบบไฟล์ใน [CONTRACT.md](../CONTRACT.md) หัวข้อ 5–6 รอความหมายของ M0–M3 จาก Chalakorn
+**สถานะ (3 พ.ย.)**
+- W2 ✅ `eval/sets/handwritten.jsonl` 70 ข้อ 7 หมวด · 35 ข้อบน schema ที่โมเดลไม่เคยเห็น · `--check-gold` ผ่าน · รอ Chalakorn ตรวจ SQL เฉลยสุ่ม 10 ข้อ
+- W3 ✅ `eval/run.py`, `eval/report.py`, `routers/eval.py` รันกับผลจำลองได้ · รอ `predict_sql()` และความหมาย M0–M3 จาก Chalakorn
+- 1.8 ✅ ตรวจแล้ว: ไม่มี API ภายนอก, ไม่มีลายน้ำ AI, ไม่มี `.env`/โมเดล/ข้อมูลในประวัติ · ยังขาด CI + CODEOWNERS (1.5), `Makefile`, `docs/PLAN.md`
+- จุดส่งของ 12:00 → ส่ง [eval/schemas/README.md](../../eval/schemas/README.md) ให้ Chalakorn
 
 ## จุดส่งของ
 

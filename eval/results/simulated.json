@@ -1,0 +1,139 @@
+{
+  "generated_at": "2026-11-03T04:56:33+07:00",
+  "simulated": true,
+  "model": {
+    "name": "mock",
+    "version": ""
+  },
+  "machine": "AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD · Windows 11",
+  "results": [
+    {
+      "mode": "M0",
+      "set": "handwritten",
+      "n": 70,
+      "execution_accuracy": 0.4,
+      "valid_sql_rate": 0.9571,
+      "by_category": {
+        "aggregate": 0.5,
+        "filter": 0.5,
+        "group": 0.2,
+        "join": 0.3,
+        "rank": 0.5,
+        "refuse": 0.2,
+        "thai_date": 0.6
+      }
+    },
+    {
+      "mode": "M0",
+      "set": "unseen",
+      "n": 35,
+      "execution_accuracy": 0.4286,
+      "valid_sql_rate": 0.9429,
+      "by_category": {
+        "aggregate": 0.4,
+        "filter": 0.6,
+        "group": 0.2,
+        "join": 0.6,
+        "rank": 0.6,
+        "refuse": 0.0,
+        "thai_date": 0.6
+      }
+    },
+    {
+      "mode": "M1",
+      "set": "handwritten",
+      "n": 70,
+      "execution_accuracy": 0.5857,
+      "valid_sql_rate": 0.9571,
+      "by_category": {
+        "aggregate": 0.5,
+        "filter": 0.7,
+        "group": 0.4,
+        "join": 0.5,
+        "rank": 0.8,
+        "refuse": 0.7,
+        "thai_date": 0.5
+      }
+    },
+    {
+      "mode": "M1",
+      "set": "unseen",
+      "n": 35,
+      "execution_accuracy": 0.5429,
+      "valid_sql_rate": 0.9429,
+      "by_category": {
+        "aggregate": 0.4,
+        "filter": 0.6,
+        "group": 0.6,
+        "join": 0.8,
+        "rank": 0.6,
+        "refuse": 0.4,
+        "thai_date": 0.4
+      }
+    },
+    {
+      "mode": "M2",
+      "set": "handwritten",
+      "n": 70,
+      "execution_accuracy": 0.4286,
+      "valid_sql_rate": 0.8714,
+      "by_category": {
+        "aggregate": 0.3,
+        "filter": 0.6,
+        "group": 0.4,
+        "join": 0.5,
+        "rank": 0.5,
+        "refuse": 0.3,
+        "thai_date": 0.4
+      }
+    },
+    {
+      "mode": "M2",
+      "set": "unseen",
+      "n": 35,
+      "execution_accuracy": 0.4,
+      "valid_sql_rate": 0.8857,
+      "by_category": {
+        "aggregate": 0.4,
+        "filter": 0.6,
+        "group": 0.4,
+        "join": 0.6,
+        "rank": 0.4,
+        "refuse": 0.2,
+        "thai_date": 0.2
+      }
+    },
+    {
+      "mode": "M3",
+      "set": "handwritten",
+      "n": 70,
+      "execution_accuracy": 0.7,
+      "valid_sql_rate": 0.8714,
+      "by_category": {
+        "aggregate": 0.6,
+        "filter": 0.8,
+        "group": 0.6,
+        "join": 0.7,
+        "rank": 0.8,
+        "refuse": 0.9,
+        "thai_date": 0.5
+      }
+    },
+    {
+      "mode": "M3",
+      "set": "unseen",
+      "n": 35,
+      "execution_accuracy": 0.6571,
+      "valid_sql_rate": 0.8857,
+      "by_category": {
+        "aggregate": 0.6,
+        "filter": 0.8,
+        "group": 0.4,
+        "join": 0.8,
+        "rank": 0.8,
+        "refuse": 0.8,
+        "thai_date": 0.4
+      }
+    }
+  ]
+}
