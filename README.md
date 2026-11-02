@@ -6,11 +6,11 @@
 
 ## ทีม
 
-| | GitHub | บทบาท | branch |
-|---|---|---|---|
-| Chalakorn | @fffalafair | โมเดล | `feat/chalakorn` |
-| Suphakorn | @SoSick41 | ระบบ | `feat/suphakorn` |
-| Wissarut | @wissarut-29 | วัดผล + คุณภาพ + นำเสนอ · เจ้าของ repo | `feat/wissarut` |
+| | GitHub | บทบาท | branch | แผนงาน |
+|---|---|---|---|---|
+| Chalakorn | @fffalafair | โมเดล | `feat/chalakorn` | [docs/tasks/chalakorn.md](docs/tasks/chalakorn.md) |
+| Suphakorn | @SoSick41 | ระบบ | `feat/suphakorn` | [docs/tasks/suphakorn.md](docs/tasks/suphakorn.md) |
+| Wissarut | @wissarut-29 | วัดผล + คุณภาพ + นำเสนอ · เจ้าของ repo | `feat/wissarut` | [docs/tasks/wissarut.md](docs/tasks/wissarut.md) |
 
 ## เอกสาร
 
