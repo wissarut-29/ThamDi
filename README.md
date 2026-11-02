@@ -25,7 +25,7 @@
 
 - **`main`** = เวอร์ชันที่ใช้งานได้ สำหรับเดโม/ส่งงาน รับ merge จาก `dev` เท่านั้น
 - **`dev`** = branch ที่ทุกคนทำงานร่วมกัน (default branch)
-- แต่ละคนทำงานใน `feat/<ชื่อ>` ของตัวเอง เสร็จเป็นชิ้น ๆ ก็ push แล้วเปิด Pull Request เข้า `dev`
+- แต่ละคนสร้าง `feat/<ชื่อ>` ของตัวเองจาก `dev` แล้วทำงานในนั้น เสร็จเป็นชิ้น ๆ ก็ push แล้วเปิด Pull Request เข้า `dev`
 - พอ `dev` พร้อม ค่อยเปิด Pull Request จาก `dev` เข้า `main`
 - ห้าม push ตรงเข้า `main` หรือ `dev` (GitHub บล็อกไว้แล้ว)
 - ห้าม commit `.env`, ไฟล์โมเดล หรือข้อมูล (repo นี้เป็น public ทุกคนเห็นได้)
@@ -36,7 +36,8 @@
 ```bash
 git clone https://github.com/wissarut-29/ThamDi.git
 cd ThamDi
-git switch feat/chalakorn          # ใช้ชื่อของตัวเอง
+git switch -c feat/chalakorn       # สร้าง branch ของตัวเองจาก dev (ครั้งแรกครั้งเดียว ใช้ชื่อของตัวเอง)
+git push -u origin feat/chalakorn
 cp .env.example .env
 # ... เขียนโค้ด ...
 git add . && git commit -m "เพิ่ม sql_guard"
