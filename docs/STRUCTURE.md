@@ -37,7 +37,8 @@ ThamDi/
 │   ├── gen_sales_db.py            ฐานข้อมูลตัวอย่าง                      Chalakorn
 │   └── hooks/                     git hooks (เช่น ตรวจลายน้ำ AI)         Chalakorn
 ├── docs/
-│   ├── TASKS.md                   แบ่งงาน + กำหนดส่ง                     ทุกคน
+│   ├── TASKS.md                   แบ่งงาน + กำหนดส่ง (ฉบับหลัก)          ทุกคน
+│   ├── tasks/<ชื่อ>.md            แผนงานของแต่ละคน                       แต่ละคน
 │   ├── CONTRACT.md                สัญญาอินเทอร์เฟซ                       ทุกคน
 │   ├── STRUCTURE.md               ไฟล์นี้                                 ทุกคน
 │   ├── CONVENTIONS.md             กฎการทำงาน                             Chalakorn
