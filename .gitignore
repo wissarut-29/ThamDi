@@ -3,15 +3,39 @@
 .env.*
 !.env.example
 
+# Models and data (ไฟล์ใหญ่ / ข้อมูลเทรน)
+models/
+ml/data/
+data/
+*.duckdb
+*.duckdb.wal
+*.safetensors
+*.gguf
+*.pt
+*.bin
+checkpoints/
+
+# AI tool settings (ห้ามมีใน repo)
+.claude/
+CLAUDE.md
+.cursor/
+.cursorrules
+.aider*
+.continue/
+.windsurfrules
+.github/copilot-instructions.md
+
 # Dependencies
 node_modules/
 venv/
 .venv/
 __pycache__/
+.pytest_cache/
 
 # Build output
 dist/
 build/
+.next/
 
 # Logs
 *.log
