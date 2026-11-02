@@ -42,6 +42,15 @@ run(question: str, dataset_id: str, mode: str = "M3") -> PipelineResult
 | `columns`, `rows` | `list` | ผลลัพธ์ของ SQL |
 | `error` | `str \| None` | ข้อความเมื่อเกิด error |
 
+สำหรับ eval (Wissarut เรียกจาก `eval/run.py --predictor pipeline`):
+
+```python
+predict_sql(question: str, schema: str, mode: str = "M3") -> str
+```
+
+- `schema` คือข้อความ `CREATE TABLE ...` ของฐานข้อมูลทดสอบ (จาก `eval/schemas/*.sql`) ไม่ใช่ dataset_id
+- คืน SQL หรือ `<REFUSE>` / `<CLARIFY>` ตัวเดียวหลังผ่าน sql_guard แล้ว ไม่ต้องรัน SQL เอง eval จะรันเองบน DuckDB
+
 **ความหมายของโหมด M0–M3:** _Chalakorn เติมตรงนี้_ (eval ของ Wissarut รันทุกโหมด)
 
 | โหมด | ความหมาย |
@@ -77,25 +86,33 @@ render(question: str, result: PipelineResult) -> str
 ```json
 {
   "generated_at": "2026-11-04T15:00:00+07:00",
+  "simulated": false,
   "model": {"name": "", "version": ""},
   "machine": "",
   "results": [
-    {"mode": "M3", "set": "handwritten", "n": 70, "execution_accuracy": 0.0, "valid_sql_rate": 0.0}
+    {"mode": "M3", "set": "handwritten", "n": 70, "execution_accuracy": 0.0, "valid_sql_rate": 0.0,
+     "by_category": {"filter": 0.0, "aggregate": 0.0, "group": 0.0, "rank": 0.0, "thai_date": 0.0, "join": 0.0, "refuse": 0.0}}
   ]
 }
 ```
 
-`set` เป็นได้ `handwritten` / `unseen` / `val` ส่วนชื่อ metric ยังเป็นร่าง Wissarut ปรับได้ แต่ต้องแจ้ง Suphakorn ก่อน
+- `set` เป็นได้ `handwritten` (70 ข้อ) / `unseen` (ข้อใน handwritten ที่อยู่บน schema ที่โมเดลไม่เคยเห็น) / `val` (จาก Chalakorn ถ้ามี)
+- `execution_accuracy` = รัน SQL ของโมเดลแล้วได้ผลเหมือน SQL เฉลย (ไม่สนลำดับแถวและชื่อคอลัมน์ มีคอลัมน์เกินได้)
+- `valid_sql_rate` = สัดส่วนคำตอบที่รันได้หรือเป็น `<REFUSE>` / `<CLARIFY>`
+- `GET /api/eval/results` คืน `latest.json` (ผลจริง) ถ้ายังไม่มีคืน `404`
+- `GET /api/eval/results?simulated=true` คืน `simulated.json` (ผลจำลอง) ไว้พัฒนาหน้าเว็บ — **ถ้า `simulated` เป็น `true` หน้าเว็บต้องขึ้นคำเตือนว่าเป็นผลจำลอง**
 
 ## 6. ชุดทดสอบ — `eval/sets/*.jsonl` (Wissarut)
 
 หนึ่งบรรทัดต่อหนึ่งข้อ:
 
 ```json
-{"id": "h001", "category": "", "schema": "", "question": "", "gold_sql": ""}
+{"id": "h001", "category": "filter", "schema": "sales", "unseen": false, "question": "...", "gold_sql": "SELECT ..."}
 ```
 
-- `handwritten.jsonl` คือชุดเขียนด้วยมือ 70 ข้อ 7 หมวด ครึ่งหนึ่งใช้ schema ที่โมเดลไม่เคยเห็น
+- `handwritten.jsonl` คือชุดเขียนด้วยมือ 70 ข้อ 7 หมวด (`filter`, `aggregate`, `group`, `rank`, `thai_date`, `join`, `refuse`) ครึ่งหนึ่งใช้ schema ที่โมเดลไม่เคยเห็น
+- `schema` ชี้ไปที่ `eval/schemas/<schema>.sql` (DDL + ข้อมูลตัวอย่าง รันบน DuckDB)
+- `gold_sql` เป็น SQL หรือ `<REFUSE>` / `<CLARIFY>`
 - **ห้ามนำไปใช้เป็นข้อมูลเทรน** และห้ามดูแม่แบบเทรนใน `ml/templates/` ตอนเขียน
 
 ## 7. คำตอบเดโม — `eval/demo_answers.json` (Chalakorn เติมจากคำถามของ Wissarut)
