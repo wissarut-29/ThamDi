@@ -11,7 +11,7 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 | เลข | งาน | สถานะ |
 |---|---|---|
 | 1.1 | สร้าง repo `ThamDi` (public) · เชิญ @fffalafair, @SoSick41 สิทธิ์ Write | ✅ ทำแล้ว · รอทั้งสองคนกดรับคำเชิญ |
-| 1.3 | default branch = `dev` · สร้าง `feat/chalakorn`, `feat/suphakorn`, `feat/wissarut` จาก `dev` | ✅ ทำแล้ว |
+| 1.3 | default branch = `dev` · สร้าง `feat/wissarut` จาก `dev` · Chalakorn และ Suphakorn สร้าง `feat/<ชื่อ>` ของตัวเองในข้อ 1.7 | ✅ ส่วนของ Wissarut ทำแล้ว · รออีก 2 คนสร้าง branch |
 | 1.6 | branch protection ของ `dev` และ `main`: ต้องผ่าน PR + 4 checks + review จาก code owner | ⏳ ตั้งแล้วบางส่วน (PR เท่านั้น, ห้าม force push/ลบ) · เพิ่ม 4 checks + code owner หลัง CI ของ Suphakorn (1.5) เขียว |
 | 1.7 | clone → `git config core.hooksPath scripts/hooks` → ปิด attribution ของเครื่องมือที่ใช้ → `make data && make test` | รอ hooks (1.4) และ Makefile |
 | 1.8 | ตรวจ repo ตาม "เช็กลิสต์ repo" ด้านล่าง → เปิด issue ทุกข้อที่ไม่ผ่าน มอบให้เจ้าของไฟล์ | |

@@ -10,7 +10,7 @@ GitHub: @fffalafair · branch: `feat/chalakorn` · ที่มา: [docs/TASKS.
 |---|---|---|
 | ~~1.2~~ | ~~push โค้ดเดิมขึ้น repo ใหม่~~ — **ข้าม** เพราะเริ่ม repo ใหม่หมด | — |
 | 1.4 | PR: เติม `docs/CONVENTIONS.md` + `scripts/hooks/` (ตรวจลายน้ำ AI) · `.gitignore` มีไฟล์เครื่องมือ AI, `models/`, `ml/data/` แล้ว ตรวจว่าครบ | merge แล้ว |
-| 1.7 | clone → `git config core.hooksPath scripts/hooks` → ปิด attribution ของเครื่องมือที่ใช้ → `make data && make test` | เทสต์ผ่านบนเครื่องตัวเอง |
+| 1.7 | clone → สร้าง branch ของตัวเอง `git switch -c feat/chalakorn && git push -u origin feat/chalakorn` → `git config core.hooksPath scripts/hooks` → ปิด attribution ของเครื่องมือที่ใช้ → `make data && make test` | เทสต์ผ่านบนเครื่องตัวเอง |
 
 hook ตรวจลายน้ำ: ให้ยกเว้น `.gitignore` เพราะในไฟล์นั้นต้องมีชื่อไฟล์ตั้งค่าเครื่องมือ AI อยู่
 

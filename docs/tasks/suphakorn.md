@@ -9,7 +9,7 @@ GitHub: @SoSick41 · branch: `feat/suphakorn` · ที่มา: [docs/TASKS.md
 | เลข | งาน | เสร็จเมื่อ |
 |---|---|---|
 | 1.5 | PR: `.github/CODEOWNERS` 3 คน · CI 4 job: `api`, `eval-gold`, `web`, `no-ai-watermark` | CI เขียว |
-| 1.7 | clone → `git config core.hooksPath scripts/hooks` → ปิด attribution ของเครื่องมือที่ใช้ → `make data && make test` | เทสต์ผ่านบนเครื่องตัวเอง |
+| 1.7 | clone → สร้าง branch ของตัวเอง `git switch -c feat/suphakorn && git push -u origin feat/suphakorn` → `git config core.hooksPath scripts/hooks` → ปิด attribution ของเครื่องมือที่ใช้ → `make data && make test` | เทสต์ผ่านบนเครื่องตัวเอง |
 
 - CODEOWNERS ให้ตรงกับเจ้าของใน [STRUCTURE.md](../STRUCTURE.md)
 - job `no-ai-watermark` ให้ยกเว้น `.gitignore` เพราะในไฟล์นั้นต้องมีชื่อไฟล์ตั้งค่าเครื่องมือ AI อยู่
