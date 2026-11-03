@@ -9,7 +9,21 @@
 | บทบาท | **โมเดล** | **ระบบ** | **วัดผล + คุณภาพ + นำเสนอ** |
 | branch | `feat/chalakorn` | `feat/suphakorn` | `feat/wissarut` |
 | หน้าที่พิเศษ | — | — | **เจ้าของ repo** (ตั้งค่า, สิทธิ์, branch protection) |
-| ดูแล | `ml/`, `agent/pipeline.py`, `preprocess.py`, `demo.py`, `sql_guard.py`, `thai_dates.py`, `tools.py`, `scripts/gen_sales_db.py`, `docs/MODEL_CARD.md` | `apps/web/`, `agent/model.py`, `answer.py`, `routers/` (ยกเว้น eval), `main.py`, `db.py`, `security.py`, `ingest.py`, Docker, `Makefile`, `.github/` | `eval/`, `routers/eval.py`, `README.md`, `docs/RUNBOOK.md`, `docs/DEMO_SCRIPT.md`, สไลด์ |
+| ดูแล | `ml/`, `agent/pipeline.py`, `preprocess.py`, `demo.py`, `sql_guard.py`, `thai_dates.py`, `tools.py`, `scripts/gen_sales_db.py`, `docs/MODEL_CARD.md` | `apps/web/`, `agent/model.py`, `answer.py`, `routers/` (ยกเว้น eval), `main.py`, `db.py`, `security.py`, `ingest.py`, Docker, `Makefile` | `eval/`, `routers/eval.py`, `README.md`, `docs/RUNBOOK.md`, `docs/DEMO_SCRIPT.md`, `.github/`, สไลด์ |
+
+## 🔄 ปรับแบ่งงาน (3 พ.ย. บ่าย)
+
+ณ 3 พ.ย. 15:40 งานฝั่ง Wissarut ที่ทำได้ตอนนี้เสร็จแล้ว (W2, W3) ส่วนที่เหลือต้องรอระบบและโมเดล ขณะที่ฝั่งระบบยังไม่มี commit และ `model.py` ปลอมที่ควรส่ง 11:00 ยังไม่มา ซึ่งขวางทั้ง pipeline และ eval จึงย้ายงานดังนี้
+
+| งาน | เดิม | ใหม่ | เหตุผล |
+|---|---|---|---|
+| 1.5 CI 4 job + CODEOWNERS + issue #7 | Suphakorn | **Wissarut** | เจ้าของ repo ทำ 1.6 ต่อได้ทันที และรู้จัก job `eval-gold` |
+| S2 เวอร์ชันปลอม (`generate_sql()` / `model_info()` คืนค่าตายตัว) | Suphakorn | **Wissarut** | งานเล็ก แต่ปลดล็อก pipeline และ `eval --predictor pipeline` |
+| S2 เวอร์ชันจริง (โหลดโมเดล, beam n, คิว) | Suphakorn | **Suphakorn** + **Chalakorn** ช่วย | Chalakorn รู้รูปแบบ checkpoint และ prompt ที่เทรน |
+| S1, S3–S6, หน้าเว็บ, Docker, `Makefile` | Suphakorn | Suphakorn (เหมือนเดิม) | เหลือแต่ฝั่งระบบล้วน |
+
+- `agent/model.py` ยังเป็นของ Suphakorn — Wissarut แค่ใส่เวอร์ชันปลอมไว้ให้ใช้ก่อน
+- Suphakorn ยังต้องทำ 1.7 (สร้าง `feat/suphakorn`) · ถ้ามีงานค้างในเครื่องที่ยังไม่ push ให้ push ก่อนเพื่อไม่ทำซ้ำกัน
 
 ---
 
@@ -23,7 +37,7 @@
 | 1.2 | **Chalakorn** | push โค้ดล่าสุดจากเครื่องตัวเองขึ้น repo ใหม่ (ดูคำสั่งด้านล่าง) | `main` และ `dev` มีโค้ดล่าสุด |
 | 1.3 | **Wissarut** | default branch = `dev` · สร้าง `feat/chalakorn`, `feat/suphakorn`, `feat/wissarut` จาก `dev` | `git branch -r` มี 5 ตัว |
 | 1.4 | **Chalakorn** | PR: `docs/CONVENTIONS.md` + `scripts/hooks/` + `.gitignore` (ไฟล์เครื่องมือ AI, `models/`, `ml/data/`) | merge แล้ว |
-| 1.5 | **Suphakorn** | PR: `.github/CODEOWNERS` 3 คน · CI 4 job: `api`, `eval-gold`, `web`, `no-ai-watermark` | CI เขียว |
+| 1.5 | **Wissarut** (ย้ายจาก Suphakorn) | PR: `.github/CODEOWNERS` 3 คน · CI 4 job: `api`, `eval-gold`, `web`, `no-ai-watermark` | CI เขียว |
 | 1.6 | **Wissarut** | branch protection ของ `dev` และ `main`: ต้องผ่าน PR + 4 checks + review จาก code owner (repo private บนบัญชีฟรีตั้งไม่ได้ → ตั้งเป็น public หรือใช้ GitHub Education) | ตั้งแล้ว |
 | 1.7 | **ทุกคน** | clone → `git config core.hooksPath scripts/hooks` → ปิด attribution ของเครื่องมือที่ใช้ → `make data && make test` | เทสต์ผ่านบนเครื่องตัวเอง |
 | 1.8 | **Wissarut** | ตรวจ repo ตาม "เช็กลิสต์ repo" ท้ายไฟล์ → เปิด issue ทุกข้อที่ไม่ผ่าน มอบให้เจ้าของไฟล์ | issue ครบ |
@@ -62,7 +76,7 @@ git push origin dev:main                          # main เริ่มจา�
 | เลข | งาน | เมื่อ | เสร็จเมื่อ |
 |---|---|---|---|
 | **S1** | ลบ `GROQ_*`/`GEMINI_*` จาก `config.py`, `.env.example` (ไฟล์ร่วม → ให้ Chalakorn review) · ใส่ `MODEL_PATH`, `MODEL_BACKEND` แทน | 3 พ.ย. | ไม่มีค่าตั้งของ API ภายนอก |
-| **S2** | `model.py`: `generate_sql()` / `model_info()` — เวอร์ชันปลอมก่อน (ส่งให้ Chalakorn ทันที) แล้วโหลดโมเดลจริง (โหลดครั้งเดียว, beam n, คิว 1–2 งาน, โหลดไม่ขึ้น API ยังเริ่มได้) | ปลอม: 3 พ.ย. เช้า · จริง: 3 พ.ย. ค่ำ | ถามผ่านเว็บได้คำตอบจากโมเดล v1 |
+| **S2** | `model.py`: `generate_sql()` / `model_info()` — เวอร์ชันปลอม **Wissarut ทำให้** แล้ว Suphakorn โหลดโมเดลจริง โดย Chalakorn ช่วย (โหลดครั้งเดียว, beam n, คิว 1–2 งาน, โหลดไม่ขึ้น API ยังเริ่มได้) | ปลอม: 3 พ.ย. บ่าย · จริง: 3 พ.ย. ค่ำ | ถามผ่านเว็บได้คำตอบจากโมเดล v1 |
 | **S3** | `answer.py` แม่แบบคำตอบไทย · `/api/chat` + auth + ตรวจเจ้าของ dataset + บันทึกประวัติ | 3 พ.ย. | เทสต์ 401 / ผู้ใช้อื่นเปิดไม่ได้ ผ่าน |
 | **S4** | แก้งานค้างจาก review: หน้าค้างเมื่อ API ล่ม/ช้า (`AppShell`) · อัป `next` ที่มีช่องโหว่ · ข้อความรหัสเดโมไม่ฮาร์ดโค้ด · `smoke.sh` ส่ง token · `CORS_ORIGINS` ว่างต้องไม่ผ่าน | 3–4 พ.ย. | `npm audit` สะอาด · ปิด API แล้วหน้าเว็บบอกให้ลองใหม่ |
 | **S5** | หน้า "เกี่ยวกับโมเดล" + หน้าผลการทดสอบ (จาก `GET /api/model`, `GET /api/eval/results` ของ Wissarut) · สถานะรอคำตอบชัดเจน | 4 พ.ย. | แสดงผลจริง |
@@ -88,7 +102,7 @@ git push origin dev:main                          # main เริ่มจา�
 
 | เวลา | ใคร → ใคร | ส่งอะไร |
 |---|---|---|
-| 3 พ.ย. 11:00 | Suphakorn → Chalakorn | `model.py` ปลอม (S2) |
+| ~~3 พ.ย. 11:00~~ 3 พ.ย. 17:00 | ~~Suphakorn~~ Wissarut → ทุกคน | `model.py` ปลอม (S2) |
 | 3 พ.ย. 12:00 | Wissarut → Chalakorn | ยืนยันรายการ schema ที่ใช้ทดสอบ (ห้ามเข้าข้อมูลเทรน) |
 | 3 พ.ย. 18:00 | Chalakorn → Suphakorn | โมเดล v1 (ลิงก์ไฟล์ใน PR) |
 | 3 พ.ย. 21:00 | ทุกคน → `dev` | ระบบทำงานครบเส้นด้วยโมเดล v1 ✅ |
@@ -102,8 +116,8 @@ git push origin dev:main                          # main เริ่มจา�
 | เวลา | Chalakorn | Suphakorn | Wissarut |
 |---|---|---|---|
 | **3 พ.ย. เช้า** | 1.2 push โค้ด · 1.4 · C1 | 1.5 · S2 (ปลอม) | 1.1 · 1.3 · 1.6 · W1 · 1.8 |
-| **3 พ.ย. บ่าย** | C1 · C2 (เริ่มเทรน) · C3 | S1 · S3 · S4 | W2 · W3 |
-| **3 พ.ย. ค่ำ** | C2 ส่งโมเดล v1 | S2 (จริง) · ต่อโมเดล v1 | W4 |
+| **3 พ.ย. บ่าย** | C1 · C2 (เริ่มเทรน) · C3 | 1.7 · S1 · S3 · S4 | W2 · W3 · S2 (ปลอม) · 1.5 |
+| **3 พ.ย. ค่ำ** | C2 ส่งโมเดล v1 · ช่วย S2 (จริง) | S2 (จริง) · ต่อโมเดล v1 | 1.6 · W4 |
 | **4 พ.ย. เช้า** | C4 → 🧊 โมเดลสุดท้าย · C6 | S4 · S5 · S6 | W4 · W6 |
 | **4 พ.ย. บ่าย** | C5 · ช่วยอ่านผล eval | S5 · S6 · แก้บั๊กจาก W4 | **W5** · W6 |
 | **4 พ.ย. ค่ำ** | 🧊 code freeze · tag v1.0 | | W7 |
