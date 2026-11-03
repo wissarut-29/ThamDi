@@ -63,3 +63,16 @@ def test_unknown_backend_raises(monkeypatch):
     monkeypatch.setenv("MODEL_BACKEND", "bogus")
     with pytest.raises(ValueError):
         model.generate_sql("x", 1)
+
+
+def test_local_without_model_files_is_not_loaded(monkeypatch, tmp_path):
+    # API ต้องเริ่มได้แม้ไม่มีไฟล์โมเดล: loaded=False และ generate_sql raise ModelNotReady
+    monkeypatch.setenv("MODEL_BACKEND", "local")
+    monkeypatch.setenv("MODEL_PATH", str(tmp_path / "missing"))
+    monkeypatch.setattr(model, "_local", model._LocalModel())
+    model.preload()
+    info = model.model_info()
+    assert info["backend"] == "local"
+    assert info["loaded"] is False
+    with pytest.raises(model.ModelNotReady):
+        model.generate_sql("x", 1)

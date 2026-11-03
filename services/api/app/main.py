@@ -6,12 +6,14 @@
 """
 
 import logging
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import db
+from .agent import model as model_backend
 from .agent import pipeline
 from .config import get_settings
 from .routers import auth, chat, datasets, model
@@ -32,6 +34,9 @@ async def lifespan(_app: FastAPI):
         db.upsert_user(DEMO_USERNAME, hash_password(settings.DEMO_PASSWORD))
     else:
         log.warning("DEMO_PASSWORD ว่าง จะ login ผู้ใช้เดโมไม่ได้")
+
+    # โหลดโมเดลใน thread แยก API ตอบได้ทันที (ระหว่างนั้น /api/model บอก loaded=false)
+    threading.Thread(target=model_backend.preload, name="model-preload", daemon=True).start()
 
     # ชั่วคราว: pipeline.get_dataset() ยังเป็น stub (docs/ISSUES.md ข้อ 5) จึงเสียบ db.open_dataset
     # ตอนแอปเริ่ม และคืนของเดิมตอนปิด · ลบเมื่อ Chalakorn ให้ get_dataset เรียก db.open_dataset แล้ว

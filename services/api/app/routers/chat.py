@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 
 from .. import db
 from ..agent import answer, demo, pipeline
-from ..agent.model import model_info
+from ..agent.model import ModelNotReady, model_info
 from ..config import get_settings
 from ..security import current_user, require_dataset_owner
 
@@ -49,6 +49,9 @@ def chat(body: ChatIn, username: str = Depends(current_user)) -> dict:
     else:
         try:
             result = pipeline.run(question, body.dataset_id, "M3")
+        except ModelNotReady as exc:
+            log.warning("โมเดลไม่พร้อม: %s", exc)
+            result = pipeline.PipelineResult(status="error", error="model-not-ready")
         except Exception:  # โมเดล/ฐานข้อมูลพัง ต้องไม่ทำให้ทั้ง request ล่ม
             log.exception("pipeline.run ล้มเหลว")
             result = pipeline.PipelineResult(status="error", error="internal")
