@@ -35,8 +35,16 @@ cd apps/web && npm ci && npm run dev    # เว็บที่ :3000
 
 ## ใช้โมเดลจริง
 ค่าเริ่มต้น `MODEL_BACKEND=fake` (SQL ตายตัว ไว้ทดสอบระบบ) · ใช้โมเดลที่ทีมเทรน:
-1. ดาวน์โหลดโมเดล (ลิงก์ใน `docs/MODEL_CARD.md`) ไว้ที่ `models/thamdi`:
-   `MODEL_URL=<ลิงก์ .zip> sh scripts/tasks.sh model`
+1. ดาวน์โหลดโมเดล (ลิงก์ใน `docs/MODEL_CARD.md`) ไว้ที่ `models/thamdi` เลือกทางใดทางหนึ่ง:
+   - **ลิงก์ zip ดาวน์โหลดตรง:** `MODEL_URL=<ลิงก์ .zip> sh scripts/tasks.sh model`
+   - **ลิงก์เป็นโฟลเดอร์ Google Drive** (`curl` โหลดโฟลเดอร์ไม่ได้):
+     1. เปิดลิงก์ใน browser → คลิกขวาที่ชื่อโฟลเดอร์ → ดาวน์โหลด (Drive จะบีบเป็น `.zip` ให้ ~1 GB)
+     2. ส่ง zip ที่โหลดมาให้สคริปต์ (ไม่ต้องแตกเอง สคริปต์ย้ายของในโฟลเดอร์ชั้นบนขึ้นมาให้):
+        ```bash
+        MODEL_URL="file:///C:/Users/<ชื่อ>/Downloads/<ชื่อไฟล์>.zip" sh scripts/tasks.sh model
+        ```
+     3. ถ้า Drive แบ่งเป็นหลาย zip ให้แตกทุกไฟล์รวมกันเองไว้ที่ `models/thamdi/` ให้มี `config.json` และ `model.safetensors` อยู่ชั้นบนสุด
+   - เช็กว่าได้ครบ: `ls models/thamdi` ต้องเห็น `config.json`, `model.safetensors`, `tokenizer.json` (หรือ `tokenizer_config.json`)
 2. แก้ `.env`: `MODEL_BACKEND=local`
 3. Docker: `INSTALL_MODEL=1 docker compose up --build -d` · รันตรง: `pip install -r services/api/requirements-model.txt` แล้ว `sh scripts/tasks.sh dev`
 4. เช็กที่หน้า "เกี่ยวกับโมเดล" ว่าสถานะ "โหลดแล้ว" (ระหว่างโหลด API ใช้งานได้ แต่ตอบว่าโมเดลยังไม่พร้อม)
