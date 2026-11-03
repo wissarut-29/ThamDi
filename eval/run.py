@@ -43,7 +43,11 @@ def load_jsonl(path: Path) -> list[dict]:
 
 
 def load_sets() -> dict[str, list[dict]]:
-    """handwritten = ทั้ง 70 ข้อ · unseen = ข้อที่อยู่บน schema ที่โมเดลไม่เคยเห็น · val = จาก Chalakorn (ถ้ามี)"""
+    """handwritten = ทั้ง 70 ข้อ · unseen = ข้อที่อยู่บน schema ที่โมเดลไม่เคยเห็น · val = จาก Chalakorn (ถ้ามี)
+
+    val_unseen = ข้อ val บน schema ที่ไม่ได้ใช้เทรน · val ส่วนที่เหลือสร้างจากแม่แบบเดียวกับข้อมูลเทรน
+    คะแนนจึงสูงเกินจริงได้ (ตัดคำถามซ้ำกับ train ไม่ได้ ดู docstring ของ ml/export_val.py) ต้องดูคู่กัน
+    """
     handwritten = load_jsonl(SETS_DIR / "handwritten.jsonl")
     sets = {
         "handwritten": handwritten,
@@ -52,6 +56,9 @@ def load_sets() -> dict[str, list[dict]]:
     val_path = SETS_DIR / "val.jsonl"
     if val_path.exists():
         sets["val"] = load_jsonl(val_path)
+        val_unseen = [item for item in sets["val"] if item.get("unseen")]
+        if val_unseen:
+            sets["val_unseen"] = val_unseen
     return sets
 
 
@@ -260,7 +267,7 @@ def run(predictor_name: str, modes: list[str], model_name: str, model_version: s
                 "valid_sql_rate": round(sum(s["valid"] for s in scored) / n, 4),
                 "by_category": by_category,
             })
-            if set_name != "unseen":  # unseen เป็นส่วนหนึ่งของ handwritten ไม่ต้องเก็บซ้ำ
+            if set_name not in ("unseen", "val_unseen"):  # เป็นส่วนหนึ่งของ handwritten / val ไม่ต้องเก็บซ้ำ
                 details += [{"mode": mode, "set": set_name, **s} for s in scored]
             print(f"{mode} {set_name:<12} n={n:<3} EX={results[-1]['execution_accuracy']:.2%} "
                   f"valid={results[-1]['valid_sql_rate']:.2%}")

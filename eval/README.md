@@ -7,7 +7,7 @@
 | ไฟล์ | คืออะไร |
 |---|---|
 | `sets/handwritten.jsonl` | ชุดทดสอบเขียนด้วยมือ 70 ข้อ 7 หมวด หมวดละ 10 · 35 ข้อบน schema ที่โมเดลไม่เคยเห็น |
-| `sets/val.jsonl` | ชุด val 210 ข้อ จาก `ml/export_val.py` ของ Chalakorn (PR #12) |
+| `sets/val.jsonl` | ชุด val 205 ข้อ จาก `ml/export_val.py` ของ Chalakorn (PR #12) · `run.py` แยกข้อ `unseen=true` ออกมาเป็นชุด `val_unseen` ด้วย เพราะ val ส่วนที่เหลือสร้างจากแม่แบบเดียวกับข้อมูลเทรน คะแนนจึงสูงเกินจริงได้ |
 | `schemas/*.sql` | ฐานข้อมูลทดสอบ (DDL + ข้อมูลตัวอย่าง) — ดู [schemas/README.md](schemas/README.md) |
 | `run.py` | รัน eval ทุกโหมด (M0–M3) × ทุกชุด |
 | `report.py` | สร้างตาราง Markdown + กราฟจากผล |
