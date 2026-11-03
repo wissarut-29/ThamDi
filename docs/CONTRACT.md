@@ -51,14 +51,19 @@ predict_sql(question: str, schema: str, mode: str = "M3") -> str
 - `schema` คือข้อความ `CREATE TABLE ...` ของฐานข้อมูลทดสอบ (จาก `eval/schemas/*.sql`) ไม่ใช่ dataset_id
 - คืน SQL หรือ `<REFUSE>` / `<CLARIFY>` ตัวเดียวหลังผ่าน sql_guard แล้ว ไม่ต้องรัน SQL เอง eval จะรันเองบน DuckDB
 
-**ความหมายของโหมด M0–M3:** _Chalakorn เติมตรงนี้_ (eval ของ Wissarut รันทุกโหมด)
+**ความหมายของโหมด M0–M3:** (eval ของ Wissarut รันทุกโหมด)
 
 | โหมด | ความหมาย |
 |---|---|
-| M0 | |
-| M1 | |
-| M2 | |
-| M3 | |
+| M0 | prompt ดิบ (คำถาม + DDL) → `generate_sql(prompt, n=1)` ใช้ผลลัพธ์ตัวแรกตรง ๆ ไม่ผ่านขั้นช่วยใด ๆ |
+| M1 | M0 + ผ่าน `preprocess.py` ก่อนสร้าง prompt (แปลงวันที่ไทย/พ.ศ. ด้วย `thai_dates.py`) ยัง beam n=1 |
+| M2 | M1 + `generate_sql(prompt, n=4)` แล้วเลือก beam อันดับแรก (เรียงจากโมเดล) ที่ผ่าน `sql_guard` |
+| M3 | M2 + สำหรับ beam ที่ผ่าน guard แต่ละตัว ลองรันแบบไม่ดึงข้อมูลจริงบน DuckDB (`EXPLAIN` หรือ `... LIMIT 0`) แล้วเลือกตัวแรกที่ทั้งผ่าน guard และรันได้จริง |
+
+กฎร่วมทุกโหมด (เพื่อให้ deterministic และ eval ซ้ำได้):
+- `generate_sql` ต้องเรียกแบบ greedy/beam ปรกติ (`do_sample=False`) ไม่ sample แบบสุ่ม
+- M2/M3: ถ้าไม่มี beam ไหนผ่านการตรวจเลย (sql_guard หรือ dry-run) ให้คืน `status="error"` — **ห้ามเอา SQL ที่ไม่ผ่านการตรวจไปรันจริงเด็ดขาด** ไม่ fallback ไปใช้ beam อันดับแรกที่ยังไม่ผ่าน
+- M1→M2 เปลี่ยนทั้ง preprocess-only→sql_guard และ beam 1→4 พร้อมกัน (จับคู่กันตามธรรมชาติของดีไซน์ เพราะ guard ไม่มีประโยชน์ถ้า beam=1) จึงไม่ใช่ ablation ที่แยกผลสองอย่างนี้ได้สะอาด — ให้ตีความผลต่าง M1→M2 ว่าเป็น "ผลของขั้น guard+beam รวมกัน" ไม่ใช่ผลของ guard อย่างเดียว
 
 ## 3. คำตอบ — `agent/answer.py` (Suphakorn)
 
