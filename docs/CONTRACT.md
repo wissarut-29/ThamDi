@@ -65,6 +65,17 @@ predict_sql(question: str, schema: str, mode: str = "M3") -> str
 - M2/M3: ถ้าไม่มี beam ไหนผ่านการตรวจเลย (sql_guard หรือ dry-run) ให้คืน `status="error"` — **ห้ามเอา SQL ที่ไม่ผ่านการตรวจไปรันจริงเด็ดขาด** ไม่ fallback ไปใช้ beam อันดับแรกที่ยังไม่ผ่าน
 - M1→M2 เปลี่ยนทั้ง preprocess-only→sql_guard และ beam 1→4 พร้อมกัน (จับคู่กันตามธรรมชาติของดีไซน์ เพราะ guard ไม่มีประโยชน์ถ้า beam=1) จึงไม่ใช่ ablation ที่แยกผลสองอย่างนี้ได้สะอาด — ให้ตีความผลต่าง M1→M2 ว่าเป็น "ผลของขั้น guard+beam รวมกัน" ไม่ใช่ผลของ guard อย่างเดียว
 
+**เปิด dataset — `app/db.py` (Suphakorn ทำ, Chalakorn ใช้ใน `pipeline.get_dataset()`)**
+
+```python
+open_dataset(dataset_id: str) -> tuple[str, duckdb.DuckDBPyConnection]
+```
+
+- คืน `(schema_ddl, connection)` — `schema_ddl` คือ `CREATE TABLE ...;` ของทุกตารางใน dataset (ใช้สร้าง prompt และหา `allowed_tables`) · `connection` เปิดแบบ `read_only=True` เขียน/ลบข้อมูลไม่ได้
+- ไม่มี dataset นั้น หรือ id ไม่ใช่ `[A-Za-z0-9_-]` (เช่น `../x`) → `KeyError` · router แปลงเป็น `404`
+- ผู้เรียก**ไม่ต้องปิด connection เอง** — ปิดอัตโนมัติเมื่อไม่มีตัวแปรอ้างถึงแล้ว (เช่น พอ `run()` คืนค่า) ถ้าจะปิดเร็วกว่านั้นเรียก `con.close()` ได้
+- ไฟล์อยู่ที่ `DATA_DIR/datasets/<dataset_id>.duckdb` (ค่า `DATA_DIR` ดูหัวข้อ 8)
+
 ## 3. คำตอบ — `agent/answer.py` (Suphakorn)
 
 ```python
@@ -131,3 +142,7 @@ render(question: str, result: PipelineResult) -> str
 ## 8. ค่าตั้ง (`.env`)
 
 ดู `.env.example` ห้าม commit `.env` เด็ดขาด
+
+- อ่านผ่าน `app.config.get_settings()` เท่านั้น (ไม่อ่าน `os.environ` ตรง ๆ) · ค่าจาก environment ทับค่าใน `.env`
+- path ที่เป็น relative (`MODEL_PATH`, `DATA_DIR`) นับจากโฟลเดอร์บนสุดของ repo ไม่ใช่โฟลเดอร์ที่รันคำสั่ง
+- `CORS_ORIGINS` คั่นด้วย `,` · ว่าง = ไม่อนุญาต origin ไหนเลย (ไม่ใช่ `*`)
