@@ -1,4 +1,5 @@
-# เจ้าของไฟล์ตาม ThamDi-TASKS-v3 · PR ที่แตะไฟล์เหล่านี้ต้องให้เจ้าของ review
+# เจ้าของไฟล์ตาม docs/TASKS.md และ docs/STRUCTURE.md · PR ที่แตะไฟล์เหล่านี้ต้องให้เจ้าของ review
+# บรรทัดที่อยู่ล่างกว่าชนะ (เช่น routers/eval.py ทับ routers/)
 # ไฟล์ร่วมใส่ทั้ง 3 คน (ต้องมีอีก 1 คน review)
 
 # Suphakorn — ระบบ
@@ -18,7 +19,6 @@
 /Makefile                           @SoSick41
 /scripts/                           @SoSick41
 /.github/                           @SoSick41
-/docs/RUNBOOK.md                    @SoSick41
 
 # Chalakorn — โมเดล
 /ml/                                    @fffalafair
@@ -28,23 +28,19 @@
 /services/api/app/agent/thai_dates.py   @fffalafair
 /services/api/app/agent/tools.py        @fffalafair
 /services/api/app/agent/demo.py         @fffalafair
-/services/api/app/routers/eval.py       @fffalafair
 /scripts/hooks/                         @fffalafair
 /scripts/gen_sales_db.py                @fffalafair
 /docs/MODEL_CARD.md                     @fffalafair
 
-# Wissarut — ทดสอบ + นำเสนอ
-/eval/                  @wissarut-29
-/eval/run.py            @fffalafair
-/eval/demo_answers.json @fffalafair
-/docs/DEMO_SCRIPT.md    @wissarut-29
-/docs/QA.md             @wissarut-29
-/docs/slides/           @wissarut-29
+# Wissarut — วัดผล (แยกจากคนเทรนโมเดล) + นำเสนอ
+/eval/                              @wissarut-29
+/services/api/app/routers/eval.py   @wissarut-29
+/eval/demo_answers.json             @fffalafair
+/docs/DEMO_SCRIPT.md                @wissarut-29
 
 # ไฟล์ร่วม
-/eval/questions.jsonl           @fffalafair @SoSick41 @wissarut-29
 /README.md                      @fffalafair @SoSick41 @wissarut-29
+/docs/RUNBOOK.md                @SoSick41 @wissarut-29
 /services/api/app/config.py     @fffalafair @SoSick41 @wissarut-29
-/services/api/app/schemas.py    @fffalafair @SoSick41 @wissarut-29
 /.env.example                   @fffalafair @SoSick41 @wissarut-29
 /docs/CONTRACT.md               @fffalafair @SoSick41 @wissarut-29

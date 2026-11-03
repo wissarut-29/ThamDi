@@ -1,6 +1,6 @@
 # Runbook
 
-เจ้าของ: Suphakorn · งาน: S-10 (TASKS v3)
+เจ้าของ: Wissarut + Suphakorn (ดูแลร่วม) · งาน: W6 · เนื้อหาฝั่งระบบ: Suphakorn
 
 วิธีติดตั้งและรันระบบบนเครื่องใหม่ ตั้งแต่ clone จนถามคำถามได้ และวิธีแก้ปัญหาที่พบบ่อยวันเดโม
 คำสั่งทั้งหมดรันใน **Git Bash** (Windows) หรือ terminal (macOS/Linux) ที่ root ของ repo
