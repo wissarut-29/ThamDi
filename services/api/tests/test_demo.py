@@ -44,3 +44,12 @@ def test_lookup_returns_none_when_file_missing(tmp_path, monkeypatch):
     monkeypatch.setattr(demo, "ANSWERS_PATH", tmp_path / "does_not_exist.json")
 
     assert demo.lookup("อะไรก็ได้") is None
+
+
+def test_lookup_returns_none_when_json_malformed(tmp_path, monkeypatch):
+    # กันไม่ให้ path สำรองตอนโมเดลพัง (DEMO_MODE) พังซ้ำเป็น 500 ถ้าไฟล์มีคอมมาเกิน/เซฟผิด
+    answers_file = tmp_path / "demo_answers.json"
+    answers_file.write_text("{not valid json,,,", encoding="utf-8")
+    monkeypatch.setattr(demo, "ANSWERS_PATH", answers_file)
+
+    assert demo.lookup("อะไรก็ได้") is None
