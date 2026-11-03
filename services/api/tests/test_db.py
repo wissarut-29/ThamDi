@@ -44,3 +44,16 @@ def test_unsafe_dataset_id_rejected(data_dir, bad_id):
     (data_dir / "x.duckdb").touch()
     with pytest.raises(KeyError):
         db.open_dataset(bad_id)
+
+
+def test_connection_closes_without_explicit_close(data_dir):
+    # สัญญา: ผู้เรียกไม่ต้อง close เอง (CONTRACT หัวข้อ 2)
+    def use_once():
+        _, con = db.open_dataset("ds1")
+        con.execute("SELECT 1")
+
+    use_once()
+    # ถ้า connection read-only ยังค้าง เปิดแบบเขียนได้จะ error เพราะตั้งค่าต่างกัน
+    writer = duckdb.connect(str(data_dir / "datasets" / "ds1.duckdb"))
+    writer.execute("INSERT INTO sales VALUES ('สาขา 3', 1)")
+    writer.close()

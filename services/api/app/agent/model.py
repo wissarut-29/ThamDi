@@ -6,8 +6,9 @@ MODEL_BACKEND=fake คืน SQL ตายตัวไว้เทสต์ (ไ
 MODEL_BACKEND=local โหลดโมเดลที่ทีมเทรนเองจาก MODEL_PATH (ยังไม่ทำ: S2 ตัวจริง)
 """
 
-import os
 import re
+
+from ..config import get_settings
 
 _REFUSE_WORDS = ("ลบ", "drop", "delete", "truncate")
 _FIRST_TABLE = re.compile(r"CREATE\s+TABLE\s+(\w+)", re.IGNORECASE)
@@ -16,7 +17,8 @@ _QUESTION = re.compile(r"### คำถาม\n(.*?)\n\n### SQL", re.DOTALL)
 
 def _backend() -> str:
     # อ่านทุกครั้งที่เรียก เทสต์จะได้สลับ backend ด้วย monkeypatch.setenv ได้
-    return os.environ.get("MODEL_BACKEND", "fake").strip().lower()
+    # ค่าที่ไม่ใช่ fake/local -> pydantic ValidationError (เป็น ValueError)
+    return get_settings().MODEL_BACKEND
 
 
 def _fake_generate(prompt: str, n: int) -> list[str]:
@@ -37,9 +39,7 @@ def generate_sql(prompt: str, n: int = 1) -> list[str]:
     backend = _backend()
     if backend == "fake":
         return _fake_generate(prompt, n)
-    if backend == "local":
-        raise RuntimeError("MODEL_BACKEND=local ยังไม่พร้อม (S2 ตัวจริง)")
-    raise ValueError(f"ไม่รู้จัก MODEL_BACKEND={backend!r} (ใช้ได้: fake, local)")
+    raise RuntimeError("MODEL_BACKEND=local ยังไม่พร้อม (S2 ตัวจริง)")
 
 
 def model_info() -> dict:

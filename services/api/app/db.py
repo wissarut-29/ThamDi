@@ -5,20 +5,19 @@
 dataset หนึ่งชุด = ไฟล์ DuckDB หนึ่งไฟล์ที่ DATA_DIR/datasets/<dataset_id>.duckdb
 """
 
-import os
 import re
 from pathlib import Path
 
 import duckdb
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+from .config import get_settings
+
 # id ต้องเป็นตัวอักษร/ตัวเลข/-/_ เท่านั้น กันการส่ง ../ หรือ path เต็มเข้ามา
 _DATASET_ID = re.compile(r"[A-Za-z0-9_-]{1,64}")
 
 
 def datasets_dir() -> Path:
-    data_dir = Path(os.environ.get("DATA_DIR") or _REPO_ROOT / "data")
-    return (data_dir / "datasets").resolve()
+    return (get_settings().DATA_DIR / "datasets").resolve()
 
 
 def dataset_path(dataset_id: str) -> Path:
