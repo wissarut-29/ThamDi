@@ -12,11 +12,15 @@
 
 ทดสอบกับ sqlglot 30.27.0 (ยังไม่มีประกาศ dependency นี้ใน requirements ของ services/api —
 ต้องให้ Suphakorn เพิ่ม ดู docs/ISSUES.md) โครงสร้าง node (เช่นชื่อคีย์ภายใน args) อาจเปลี่ยนได้
-ตามเวอร์ชัน ใช้ find_all() แทนการเข้าถึง args โดยตรงให้มากที่สุดเพื่อลดความเสี่ยงนี้
+ตามเวอร์ชัน จึงใช้ find_all()/traverse_scope() แทนการเข้าถึง args โดยตรงให้มากที่สุดเพื่อลด
+ความเสี่ยงนี้ — การอ้างตารางที่อนุญาต ใช้ traverse_scope() โดยเฉพาะ (ไม่ใช่แค่ find_all(exp.Table)
+ลบด้วยชื่อ CTE) เพราะต้องรู้ขอบเขตจริงของแต่ละชื่อ ไม่งั้นตั้งชื่อ CTE ซ้ำกับตารางจริงจะหลบ guard ได้
+(ดู docstring ของ _real_tables_used)
 """
 
 import sqlglot
 from sqlglot import exp
+from sqlglot.optimizer.scope import traverse_scope
 
 DEFAULT_LIMIT = 1000
 # ชนิด query ที่อนุญาตเป็น root statement (SELECT เดี่ยว, WITH...SELECT และ set operation)
@@ -36,13 +40,22 @@ class SqlGuardError(ValueError):
     """SQL ไม่ผ่านการตรวจความปลอดภัย"""
 
 
-def _cte_names(stmt: exp.Expression) -> set[str]:
-    """ชื่อ CTE ทั้งหมดที่นิยามไว้ในคำสั่ง (ทุกระดับ ไม่ใช่แค่ CTE บนสุด)
+def _real_tables_used(stmt: exp.Expression) -> set[str]:
+    """ชื่อตารางจริงที่ถูกอ้างถึง (ไม่รวมชื่อ CTE ที่นิยามเองในคำสั่ง)
 
-    ใช้ find_all(exp.CTE) แทนการอ่าน stmt.args["with_"] ตรง ๆ เพราะชื่อคีย์ภายในนี้ขึ้นกับ
-    เวอร์ชันของ sqlglot (ดู docstring ของไฟล์)
+    ห้ามใช้ find_all(exp.Table) ลบด้วยชุดชื่อ CTE ทั้งหมดแบบ global เพราะถ้าตั้งชื่อ CTE
+    ซ้ำกับตารางจริง (เช่น `WITH secret AS (SELECT * FROM secret) SELECT * FROM secret`)
+    การลบแบบ global จะลบการอ้างถึงตารางจริง "secret" ที่อยู่*ข้างใน*นิยาม CTE ไปด้วย ทำให้
+    guard มองไม่เห็นว่ามีการอ่านตารางจริงชื่อนี้อยู่ — ต้องรู้ "ขอบเขต" ว่าชื่อไหนในจุดไหนของ
+    คำสั่งอ้างถึง CTE จริง ๆ จึงใช้ traverse_scope ของ sqlglot ซึ่งไล่ตามขอบเขตแบบเดียวกับที่
+    ตัว parser ของฐานข้อมูลจริงทำ (เทียบ node ไม่ใช่เทียบชื่อ)
     """
-    return {cte.alias for cte in stmt.find_all(exp.CTE)}
+    tables = set()
+    for scope in traverse_scope(stmt):
+        for source in scope.sources.values():
+            if isinstance(source, exp.Table):
+                tables.add(source.name)
+    return tables
 
 
 def _is_forbidden_func(node: exp.Expression) -> bool:
@@ -83,7 +96,7 @@ def check_sql(sql: str, allowed_tables: set[str], default_limit: int = DEFAULT_L
         if isinstance(node, (exp.Func, exp.Anonymous)) and _is_forbidden_func(node):
             raise SqlGuardError("ห้ามใช้ฟังก์ชันอ่านไฟล์")
 
-    tables_used = {t.name for t in stmt.find_all(exp.Table)} - _cte_names(stmt)
+    tables_used = _real_tables_used(stmt)
     disallowed = tables_used - set(allowed_tables)
     if disallowed:
         raise SqlGuardError(f"อ้างตารางที่ไม่ได้รับอนุญาตสำหรับ dataset นี้: {sorted(disallowed)}")

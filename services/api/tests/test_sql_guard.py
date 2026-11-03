@@ -80,6 +80,20 @@ def test_blocks_table_outside_dataset():
         check_sql("SELECT * FROM other_dataset_table", ALLOWED)
 
 
+def test_blocks_table_shadowed_by_same_named_cte():
+    # ชื่อ CTE ซ้ำกับตารางต้องห้าม "secret" — การอ้างถึง secret ข้างในนิยาม CTE เอง
+    # เป็นตารางจริง ต้องยังโดนบล็อก แม้ "secret" จะดูเหมือนเป็นชื่อ CTE จากภายนอก
+    sql = "WITH secret AS (SELECT * FROM secret) SELECT * FROM secret"
+    with pytest.raises(SqlGuardError):
+        check_sql(sql, ALLOWED)
+
+
+def test_blocks_table_shadowed_by_cte_inside_subquery():
+    sql = "SELECT * FROM secret, (WITH secret AS (SELECT 1 AS x) SELECT x FROM secret) AS t"
+    with pytest.raises(SqlGuardError):
+        check_sql(sql, ALLOWED)
+
+
 @pytest.mark.parametrize(
     "sql",
     [
