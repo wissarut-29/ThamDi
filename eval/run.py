@@ -16,6 +16,7 @@ import hashlib
 import itertools
 import json
 import platform
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -59,8 +60,13 @@ def schema_sql(schema: str) -> str:
 
 
 def schema_ddl(schema: str) -> str:
-    """เฉพาะส่วน CREATE TABLE (ก่อนบรรทัด '-- data') สำหรับส่งให้โมเดล"""
-    return schema_sql(schema).split("-- data", 1)[0].strip()
+    """เฉพาะส่วน CREATE TABLE (ก่อนบรรทัด '-- data') สำหรับส่งให้โมเดล
+
+    ตัดคอมเมนต์ `--` ออกทั้งหมด ให้ prompt อยู่ในรูปแบบเดียวกับ DDL ตอนเทรน (ไม่มีคอมเมนต์)
+    """
+    ddl = schema_sql(schema).split("-- data", 1)[0]
+    lines = [line.split("--", 1)[0].rstrip() for line in ddl.splitlines()]
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
 
 
 def connect(schema: str) -> duckdb.DuckDBPyConnection:

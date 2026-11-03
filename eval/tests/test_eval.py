@@ -44,6 +44,20 @@ def test_score_correct_sql_with_different_form():
     assert run.score(item, "SELECT COUNT(customer_id) AS n FROM customers")["correct"]
 
 
+def test_schema_ddl_has_no_comments_or_data():
+    for schema in ("sales", "clinic", "library"):
+        ddl = run.schema_ddl(schema)
+        assert "--" not in ddl
+        assert "INSERT" not in ddl
+        assert ddl.startswith("CREATE TABLE")
+
+
+def test_schema_ddl_is_still_valid_sql():
+    import duckdb
+    for schema in ("sales", "clinic", "library"):
+        duckdb.connect(":memory:").execute(run.schema_ddl(schema))
+
+
 def test_mock_is_deterministic():
     item = {"id": "h001", "gold_sql": "SELECT 1"}
     assert run.mock_predict(item, "M3") == run.mock_predict(item, "M3")
