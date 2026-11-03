@@ -4,7 +4,9 @@
 """
 
 import logging
+import os
 import secrets
+from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
@@ -77,5 +79,17 @@ class Settings(BaseSettings):
 
 
 def get_settings() -> Settings:
-    # สร้างใหม่ทุกครั้ง (ถูกมาก) เทสต์จะได้เปลี่ยนค่าด้วย monkeypatch.setenv ได้ทันที
+    """ค่าตั้งปัจจุบัน · cache ไว้ อ่าน .env ใหม่เฉพาะเมื่อไฟล์หรือ env ที่เกี่ยวข้องเปลี่ยน
+    (เทสต์ยังเปลี่ยนค่าด้วย monkeypatch.setenv ได้ทันทีโดยไม่ต้อง clear cache)"""
+    env_file = Settings.model_config.get("env_file")
+    try:
+        mtime = Path(env_file).stat().st_mtime_ns if env_file else None
+    except OSError:
+        mtime = None
+    env = tuple(os.environ.get(name) for name in Settings.model_fields)
+    return _load_settings((str(env_file) if env_file else None, mtime, env))
+
+
+@lru_cache(maxsize=16)
+def _load_settings(_key: tuple) -> Settings:
     return Settings()

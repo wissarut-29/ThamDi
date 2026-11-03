@@ -55,7 +55,7 @@ def render(question: str, result: PipelineResult) -> str:
         parts = [f"{col} = {format_value(val)}" for col, val in zip(columns, rows[0], strict=False)]
         return "คำตอบ: " + ", ".join(parts)
 
-    text = f"พบ {len(rows):,} รายการ (ดูในตารางด้านล่าง)"
     if len(rows) >= ROW_LIMIT:
-        text += f" · แสดงแค่ {ROW_LIMIT:,} แถวแรก"
-    return text
+        # ได้ครบ LIMIT พอดี บอกไม่ได้ว่าถูกตัดหรือมีพอดี จึงบอกตามจริงว่าอาจมีมากกว่านี้
+        return f"พบอย่างน้อย {ROW_LIMIT:,} รายการ (แสดงได้สูงสุด {ROW_LIMIT:,} แถว อาจมีมากกว่านี้)"
+    return f"พบ {len(rows):,} รายการ (ดูในตารางด้านล่าง)"

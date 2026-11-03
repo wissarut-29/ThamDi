@@ -22,7 +22,8 @@ def test_single_row_many_columns():
 def test_many_rows_and_empty():
     assert answer.render("q", ok(["a"], [[1], [2], [3]])).startswith("พบ 3 รายการ")
     assert answer.render("q", ok(["a"], [])) == answer.EMPTY_TEXT
-    assert "1,000 แถวแรก" in answer.render("q", ok(["a"], [[i] for i in range(1000)]))
+    assert "อาจมีมากกว่านี้" in answer.render("q", ok(["a"], [[i] for i in range(1000)]))
+    assert "อาจมีมากกว่านี้" not in answer.render("q", ok(["a"], [[i] for i in range(999)]))
 
 
 def test_refuse_clarify_error_never_leak_details():

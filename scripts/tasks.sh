@@ -29,8 +29,28 @@ model)
     mkdir -p "$dest"
     tmp="$dest.download.zip"
     curl -fL --retry 3 -o "$tmp" "$MODEL_URL"
-    "$PYTHON" -c "import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "$tmp" "$dest"
+    # zip จาก Drive มักมีโฟลเดอร์ชั้นบนครอบ (เช่น model/config.json) → ย้ายของข้างในขึ้นมาไว้ที่ $dest ตรง ๆ
+    "$PYTHON" - "$tmp" "$dest" <<'PY'
+import shutil, sys, tempfile, zipfile
+from pathlib import Path
+
+zip_path, dest = sys.argv[1], Path(sys.argv[2])
+with tempfile.TemporaryDirectory(dir=dest.parent) as tmp:
+    zipfile.ZipFile(zip_path).extractall(tmp)
+    root = Path(tmp)
+    entries = [p for p in root.iterdir() if p.name != "__MACOSX"]
+    if len(entries) == 1 and entries[0].is_dir():
+        root = entries[0]
+    for item in root.iterdir():
+        target = dest / item.name
+        if target.is_dir():
+            shutil.rmtree(target)
+        elif target.exists():
+            target.unlink()
+        shutil.move(str(item), str(target))
+PY
     rm -f "$tmp"
+    [ -f "$dest/config.json" ] || { echo "ไม่พบ $dest/config.json หลังแตกไฟล์ — zip ไม่ใช่โฟลเดอร์โมเดล HF" >&2; exit 1; }
     echo "โมเดลอยู่ที่ $dest แล้ว · ตั้ง MODEL_BACKEND=local ใน .env เพื่อใช้"
     ;;
 dev)

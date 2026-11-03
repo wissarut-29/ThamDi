@@ -23,7 +23,8 @@ def upload(
     try:
         tables = read_upload(file.filename or "", content)
     except IngestError as exc:
-        code = status.HTTP_413_CONTENT_TOO_LARGE if len(content) > MAX_BYTES else status.HTTP_400_BAD_REQUEST
+        # ใส่ 413 เป็นตัวเลข ชื่อค่าคงที่ของ Starlette เปลี่ยนตามเวอร์ชัน
+        code = 413 if len(content) > MAX_BYTES else status.HTTP_400_BAD_REQUEST
         raise HTTPException(status_code=code, detail=str(exc)) from exc
 
     name = PurePath(file.filename or "data").name[:128]

@@ -143,11 +143,16 @@ def create_dataset(owner: str, name: str, tables: dict[str, "pandas.DataFrame"])
     con.close()
 
     names = list(tables)
-    with closing(_app_db()) as app, app:
-        app.execute(
-            "INSERT INTO datasets VALUES (?, ?, ?, ?, ?)",
-            (dataset_id, owner, name, json.dumps(names, ensure_ascii=False), _now()),
-        )
+    try:
+        with closing(_app_db()) as app, app:
+            app.execute(
+                "INSERT INTO datasets VALUES (?, ?, ?, ?, ?)",
+                (dataset_id, owner, name, json.dumps(names, ensure_ascii=False), _now()),
+            )
+    except Exception:
+        # ไม่ให้ไฟล์ .duckdb ค้างโดยไม่มี record ชี้ถึง
+        path.unlink(missing_ok=True)
+        raise
     return {"dataset_id": dataset_id, "name": name, "tables": names}
 
 

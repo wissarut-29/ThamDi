@@ -70,3 +70,10 @@ def test_env_example_parses(monkeypatch):
     assert s.MODEL_BACKEND == "fake"
     assert s.DATA_DIR == config.REPO_ROOT / "data"
     assert s.cors_origins == ["http://localhost:3000"]
+
+
+def test_settings_cached_until_env_changes(monkeypatch):
+    first = config.get_settings()
+    assert config.get_settings() is first  # ไม่อ่าน .env ซ้ำทุกครั้ง
+    monkeypatch.setenv("MODEL_BACKEND", "local")
+    assert config.get_settings().MODEL_BACKEND == "local"

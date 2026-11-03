@@ -8,19 +8,20 @@
 
 import logging
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 
 from .. import db
 from ..agent import answer, demo, pipeline
-from ..agent.model import ModelNotReady, model_info
+from ..agent.model import ModelBusy, ModelNotReady, model_info
 from ..config import get_settings
 from ..security import limit_by_user, require_dataset_owner
 
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["chat"])
 
+BUSY_TEXT = "มีคนกำลังถามอยู่ ระบบตอบได้ทีละคำถาม รอสักครู่แล้วลองใหม่"
 NOT_READY_TEXT = "ตอนนี้โมเดลยังไม่พร้อม และคำถามนี้ไม่อยู่ในคำถามเดโม ลองใหม่อีกครั้งภายหลัง"
 
 
@@ -43,12 +44,21 @@ def chat(body: ChatIn, username: str = Depends(limit_by_user("chat", limit=20)))
     if get_settings().DEMO_MODE or not model_info()["loaded"]:
         canned = _demo_answer(question)
         if canned is not None:
-            reply = {k: canned.get(k) for k in ("answer", "status", "sql", "columns", "rows")}
+            # คำตอบเดโมอาจไม่ครบทุก key (ไฟล์ของ C5) · history ต้องมี status/answer เสมอ
+            reply = {
+                "answer": canned.get("answer") or "",
+                "status": canned.get("status") or "ok",
+                "sql": canned.get("sql"),
+                "columns": canned.get("columns") or [],
+                "rows": canned.get("rows") or [],
+            }
         else:
             reply = {"answer": NOT_READY_TEXT, "status": "error", "sql": None, "columns": [], "rows": []}
     else:
         try:
             result = pipeline.run(question, body.dataset_id, "M3")
+        except ModelBusy as exc:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=BUSY_TEXT) from exc
         except ModelNotReady as exc:
             log.warning("โมเดลไม่พร้อม: %s", exc)
             result = pipeline.PipelineResult(status="error", error="model-not-ready")

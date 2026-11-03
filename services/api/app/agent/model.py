@@ -24,11 +24,16 @@ _QUESTION = re.compile(r"### คำถาม\n(.*?)\n\n### SQL", re.DOTALL)
 
 MAX_NEW_TOKENS = 160
 MAX_CONCURRENT = 1  # รันพร้อมกันได้ 1 งาน งานที่เกินรอคิว (CPU/RAM เครื่องเดโมมีจำกัด)
-QUEUE_TIMEOUT_S = 120
+# รอคิวไม่นาน: request ที่รอยึด thread ของ FastAPI ไว้ ถ้ารอนาน endpoint อื่น (login, /api/model) จะค้างตาม
+QUEUE_TIMEOUT_S = 10
 
 
 class ModelNotReady(RuntimeError):
-    """โมเดลยังโหลดไม่เสร็จ / โหลดไม่ขึ้น / คิวเต็มนานเกิน · router แปลงเป็น status error"""
+    """โมเดลยังโหลดไม่เสร็จ / โหลดไม่ขึ้น · router แปลงเป็น status error"""
+
+
+class ModelBusy(ModelNotReady):
+    """คิวโมเดลเต็มเกิน QUEUE_TIMEOUT_S · router ตอบ 503 ให้ผู้ใช้ลองใหม่"""
 
 
 def _backend() -> str:
@@ -107,7 +112,7 @@ class _LocalModel:
         if not self.loaded:
             raise ModelNotReady(self.error or "โมเดลยังไม่พร้อม")
         if not self._slots.acquire(timeout=QUEUE_TIMEOUT_S):
-            raise ModelNotReady("คิวโมเดลเต็ม ลองใหม่อีกครั้ง")
+            raise ModelBusy("คิวโมเดลเต็ม")
         try:
             import torch
 

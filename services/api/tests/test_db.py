@@ -1,3 +1,4 @@
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -65,3 +66,22 @@ def test_open_dataset_blocks_file_access_from_sql(data_dir):
     _, con = db.open_dataset("ds1")
     with pytest.raises(duckdb.Error):
         con.execute(f"SELECT * FROM read_csv('{(data_dir / 'secret.csv').as_posix()}')").fetchall()
+
+
+def test_create_dataset_cleans_file_when_metadata_insert_fails(data_dir, monkeypatch):
+    import pandas as pd
+
+    db.init_db()
+    before = set((data_dir / "datasets").iterdir())
+    # owner ไม่มีในตาราง users ไม่ได้ทำให้พัง (SQLite ไม่บังคับ FK) จึงจำลองให้ insert พังเอง
+    real_app_db = db._app_db
+
+    def broken():
+        con = real_app_db()
+        con.execute("DROP TABLE datasets")
+        return con
+
+    monkeypatch.setattr(db, "_app_db", broken)
+    with pytest.raises(sqlite3.OperationalError):
+        db.create_dataset("demo", "x.csv", {"x": pd.DataFrame({"a": [1]})})
+    assert set((data_dir / "datasets").iterdir()) == before
