@@ -9,3 +9,7 @@ ignore = ["E402"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI ใช้ Depends/File ใน default ของพารามิเตอร์
+extend-immutable-calls = ["fastapi.Depends", "fastapi.File", "fastapi.Query"]
