@@ -58,6 +58,56 @@ def test_schema_ddl_is_still_valid_sql():
         duckdb.connect(":memory:").execute(run.schema_ddl(schema))
 
 
+def _use_val(tmp_path, monkeypatch, val_items, val_schema="val_shop"):
+    """ชี้ SETS_DIR/SCHEMAS_DIR ไปที่โฟลเดอร์ชั่วคราว ที่มี handwritten + schema เดิม และ val ที่ส่งเข้ามา"""
+    import json
+    import shutil
+    sets, schemas = tmp_path / "sets", tmp_path / "schemas"
+    shutil.copytree(run.SETS_DIR, sets)
+    shutil.copytree(run.SCHEMAS_DIR, schemas)
+    (schemas / f"{val_schema}.sql").write_text(
+        "CREATE TABLE items (item_id INTEGER, name VARCHAR);\n-- data\nINSERT INTO items VALUES (1, 'ปากกา');\n",
+        encoding="utf-8",
+    )
+    (sets / "val.jsonl").write_text(
+        "".join(json.dumps(item, ensure_ascii=False) + "\n" for item in val_items), encoding="utf-8"
+    )
+    monkeypatch.setattr(run, "SETS_DIR", sets)
+    monkeypatch.setattr(run, "SCHEMAS_DIR", schemas)
+
+
+def _val_item(**kw):
+    item = {"id": "v001", "category": "filter", "schema": "val_shop", "unseen": True,
+            "question": "สินค้ามีอะไรบ้าง", "gold_sql": "SELECT name FROM items"}
+    return {**item, **kw}
+
+
+def test_check_gold_accepts_valid_val(tmp_path, monkeypatch):
+    _use_val(tmp_path, monkeypatch, [_val_item(), _val_item(id="v002", category="refuse", gold_sql="<REFUSE>")])
+    assert run.check_gold() == 0
+    assert "val" in run.load_sets()
+
+
+def test_check_gold_rejects_bad_val(tmp_path, monkeypatch):
+    handwritten_q = run.load_jsonl(run.SETS_DIR / "handwritten.jsonl")[0]["question"]
+    _use_val(tmp_path, monkeypatch, [_val_item(), _val_item(id="v002", question=handwritten_q)])
+    assert run.check_gold() == 1
+
+
+def test_check_val_rules():
+    hw = [{"id": "h001", "question": "ลูกค้ามีกี่คน"}]
+    # refuse ไม่ต้องรัน SQL จึงเหลือแค่ปัญหาเรื่องชื่อ schema
+    assert run.check_val([_val_item(schema="sales", category="refuse", gold_sql="<REFUSE>")], hw) == [
+        "schema sales ต้องขึ้นต้นด้วย val_",
+    ]
+    problems = run.check_val([_val_item(id="h001", question="ลูกค้ามีกี่คน", schema="val_missing")], hw)
+    assert problems == [
+        "h001: ไม่มี schema val_missing",
+        "h001: id ซ้ำกับ handwritten",
+        "h001: คำถามซ้ำกับ handwritten",
+    ]
+
+
 def test_mock_is_deterministic():
     item = {"id": "h001", "gold_sql": "SELECT 1"}
     assert run.mock_predict(item, "M3") == run.mock_predict(item, "M3")
