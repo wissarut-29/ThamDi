@@ -24,7 +24,7 @@
 | 1.3 | **Wissarut** | default branch = `dev` · สร้าง `feat/chalakorn`, `feat/suphakorn`, `feat/wissarut` จาก `dev` | `git branch -r` มี 5 ตัว |
 | 1.4 | **Chalakorn** | PR: `docs/CONVENTIONS.md` + `scripts/hooks/` + `.gitignore` (ไฟล์เครื่องมือ AI, `models/`, `ml/data/`) | merge แล้ว |
 | 1.5 | **Suphakorn** | PR: `.github/CODEOWNERS` 3 คน · CI 4 job: `api`, `eval-gold`, `web`, `no-ai-watermark` | CI เขียว |
-| 1.6 | **Wissarut** | branch protection ของ `dev` และ `main`: ต้องผ่าน PR + 4 checks + review จาก code owner (repo private บนบัญชีฟรีตั้งไม่ได้ → ตั้งเป็น public หรือใช้ GitHub Education) | ตั้งแล้ว |
+| 1.6 | **Wissarut** | branch protection ของ `dev` และ `main`: ต้องผ่าน PR + 4 checks (ไม่บังคับ review จาก code owner เพื่อไม่ให้ติดรอคนช่วงใกล้ส่ง) | ตั้งแล้ว 4 พ.ย. |
 | 1.7 | **ทุกคน** | clone → `git config core.hooksPath scripts/hooks` → ปิด attribution ของเครื่องมือที่ใช้ → `make data && make test` | เทสต์ผ่านบนเครื่องตัวเอง |
 | 1.8 | **Wissarut** | ตรวจ repo ตาม "เช็กลิสต์ repo" ท้ายไฟล์ → เปิด issue ทุกข้อที่ไม่ผ่าน มอบให้เจ้าของไฟล์ | issue ครบ |
 
@@ -72,7 +72,7 @@ git push origin dev:main                          # main เริ่มจา�
 
 | เลข | งาน | เมื่อ | เสร็จเมื่อ |
 |---|---|---|---|
-| **W1** | onboarding: อ่าน README, `docs/PLAN.md`, `CONVENTIONS.md` · รันระบบ · ถาม 3 คำถาม | 3 พ.ย. เช้า | รันได้บนเครื่องตัวเอง |
+| **W1** | onboarding: อ่าน README, `CONVENTIONS.md` · รันระบบ · ถาม 3 คำถาม | 3 พ.ย. เช้า | รันได้บนเครื่องตัวเอง |
 | **W2** | **ชุดทดสอบเขียนด้วยมือ 70 ข้อ 7 หมวด:** ตรวจของเดิม เขียนเพิ่มให้ครบ (ห้ามเปิดดูแม่แบบเทรนใน `ml/templates/`) · ครึ่งหนึ่งบน schema ที่โมเดลไม่เคยเห็น · `--check-gold` ผ่าน | 3 พ.ย. | 70 ข้อ + Chalakorn ช่วยตรวจ SQL เฉลยแบบสุ่ม 10 ข้อ |
 | **W3** | `eval/run.py` M0–M3 × set (handwritten / unseen / val) + `eval/report.py` สร้างตาราง Markdown + กราฟ · `routers/eval.py` (`GET /api/eval/results`) | 3 พ.ย. | รันกับผลจำลองได้ |
 | **W4** | ทดสอบแบบผู้ใช้: อัปโหลดหลายนามสกุล · ถาม 10 คำถาม · สั่ง "ลบตาราง" · ไฟล์มีคำสั่งแฝง · ถามพร้อมกัน 2 แท็บ → **เปิด issue** ให้เจ้าของไฟล์ | 3 พ.ย. ค่ำ + 4 พ.ย. เช้า | รายการบั๊กครบ |
@@ -122,13 +122,13 @@ git push origin dev:main                          # main เริ่มจา�
 ---
 
 ## ✅ เช็กลิสต์ repo (Wissarut ตรวจในข้อ 1.7 และอีกครั้ง 4 พ.ย. ก่อน freeze)
-- [ ] ไม่มีการเรียก API ภายนอกหรือค่าตั้ง/ข้อความที่ชวนเข้าใจว่าใช้
-- [ ] ไม่มีลายน้ำ AI ทั้งใน commit ทุก branch, PR, โค้ด, เอกสาร และไม่มีไฟล์ตั้งค่าเครื่องมือ AI
-- [ ] ไม่มี `.env`, ไฟล์โมเดล, `data/`, `*.duckdb` ในประวัติ git
+- [x] ไม่มีการเรียก API ภายนอกหรือค่าตั้ง/ข้อความที่ชวนเข้าใจว่าใช้
+- [x] ไม่มีลายน้ำ AI ทั้งใน commit ทุก branch, PR, โค้ด, เอกสาร และไม่มีไฟล์ตั้งค่าเครื่องมือ AI
+- [x] ไม่มี `.env`, ไฟล์โมเดล, `data/`, `*.duckdb` ในประวัติ git
 - [ ] CI 4 job เขียวบน `dev` และ `main`
-- [ ] CODEOWNERS มี 3 คน · README หัวข้อทีมมี 3 คนพร้อมงาน
-- [ ] ลิงก์ทุกที่ชี้ไป `github.com/wissarut-29/ThamDi` (README, docs, CONTRACT) ไม่มีลิงก์ repo เก่า
-- [ ] `docs/STRUCTURE.md`, `TASKS.md`, `CONTRACT.md`, `PLAN.md` ตรงกับของจริง
+- [x] CODEOWNERS มี 3 คน · README หัวข้อทีมมี 3 คนพร้อมงาน
+- [x] ลิงก์ทุกที่ชี้ไป `github.com/wissarut-29/ThamDi` (README, docs, CONTRACT) ไม่มีลิงก์ repo เก่า
+- [ ] `docs/STRUCTURE.md`, `TASKS.md`, `CONTRACT.md` ตรงกับของจริง
 - [ ] ทำตาม README บนเครื่องใหม่แล้วรันได้ตั้งแต่ clone จนถามคำถามได้
 - [ ] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น
 - [ ] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง
