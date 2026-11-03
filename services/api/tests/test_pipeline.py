@@ -41,9 +41,10 @@ def test_predict_sql_m2_picks_first_beam_that_passes_guard(monkeypatch):
     assert "other_table" not in result
 
 
-def test_predict_sql_m2_all_fail_falls_back_to_refuse(monkeypatch):
+def test_predict_sql_m2_all_fail_returns_empty_not_refuse(monkeypatch):
+    # ห้ามคืน <REFUSE> ตรงนี้ — จะทำให้ eval ให้คะแนนผิดว่าโมเดล "ปฏิเสธถูก" ทั้งที่แค่ SQL พังทุก beam
     monkeypatch.setattr(pipeline, "generate_sql", lambda prompt, n: ["DROP TABLE orders"] * 4)
-    assert pipeline.predict_sql(QUESTION, SCHEMA, "M2") == "<REFUSE>"
+    assert pipeline.predict_sql(QUESTION, SCHEMA, "M2") == ""
 
 
 def test_predict_sql_m3_skips_beam_that_fails_dry_run(monkeypatch):

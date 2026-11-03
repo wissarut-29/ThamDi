@@ -3,18 +3,24 @@
 เจ้าของ: Chalakorn · งาน: C3 · สัญญาอินเทอร์เฟซ: docs/CONTRACT.md
 
 ใช้ sqlglot แยกวิเคราะห์ SQL จริง (ไม่ใช่ regex อย่างเดียว) เพื่อตรวจ:
-- ต้องเป็น SELECT หรือ WITH...SELECT (CTE) คำสั่งเดียวเท่านั้น ห้ามต่อกันด้วย ;
+- ต้องเป็น SELECT/WITH (CTE)/UNION/INTERSECT/EXCEPT คำสั่งเดียวเท่านั้น ห้ามต่อกันด้วย ;
 - ห้าม DDL/DML/PRAGMA/ATTACH/COPY/INSTALL ซ้อนอยู่ที่ไหนก็ตาม รวมถึงซ้อนอยู่ใน CTE
   (เช่น `WITH x AS (DELETE FROM t RETURNING *) SELECT * FROM x` ต้อง parse ทั้งต้นไม้ ไม่ใช่เช็กแค่ root)
 - อ้างได้เฉพาะตารางของ dataset นั้น (ไม่รวมชื่อ CTE ที่นิยามเองในคำสั่ง)
 - ห้ามฟังก์ชันอ่านไฟล์ (read_csv, read_parquet, glob ฯลฯ)
 - เติม LIMIT ให้ถ้ายังไม่มี
+
+ทดสอบกับ sqlglot 30.27.0 (ยังไม่มีประกาศ dependency นี้ใน requirements ของ services/api —
+ต้องให้ Suphakorn เพิ่ม ดู docs/ISSUES.md) โครงสร้าง node (เช่นชื่อคีย์ภายใน args) อาจเปลี่ยนได้
+ตามเวอร์ชัน ใช้ find_all() แทนการเข้าถึง args โดยตรงให้มากที่สุดเพื่อลดความเสี่ยงนี้
 """
 
 import sqlglot
 from sqlglot import exp
 
 DEFAULT_LIMIT = 1000
+# ชนิด query ที่อนุญาตเป็น root statement (SELECT เดี่ยว, WITH...SELECT และ set operation)
+ALLOWED_ROOT_TYPES = (exp.Select, exp.Union, exp.Intersect, exp.Except)
 
 # คำสั่งต้องห้าม เช็กทั้งต้นไม้ ไม่ใช่แค่ root เพราะ DML ซ้อนอยู่ใน CTE ได้ (ดู docstring)
 FORBIDDEN_STATEMENT_TYPES = (
@@ -31,10 +37,12 @@ class SqlGuardError(ValueError):
 
 
 def _cte_names(stmt: exp.Expression) -> set[str]:
-    with_ = stmt.args.get("with_")
-    if not with_:
-        return set()
-    return {cte.alias for cte in with_.expressions}
+    """ชื่อ CTE ทั้งหมดที่นิยามไว้ในคำสั่ง (ทุกระดับ ไม่ใช่แค่ CTE บนสุด)
+
+    ใช้ find_all(exp.CTE) แทนการอ่าน stmt.args["with_"] ตรง ๆ เพราะชื่อคีย์ภายในนี้ขึ้นกับ
+    เวอร์ชันของ sqlglot (ดู docstring ของไฟล์)
+    """
+    return {cte.alias for cte in stmt.find_all(exp.CTE)}
 
 
 def _is_forbidden_func(node: exp.Expression) -> bool:
@@ -64,8 +72,10 @@ def check_sql(sql: str, allowed_tables: set[str], default_limit: int = DEFAULT_L
         raise SqlGuardError("ต้องมี SQL เดียวเท่านั้น ห้ามต่อกันด้วย ;")
 
     stmt = statements[0]
-    if not isinstance(stmt, exp.Select):
-        raise SqlGuardError(f"อนุญาตเฉพาะ SELECT/WITH เท่านั้น ไม่ใช่ {type(stmt).__name__}")
+    if not isinstance(stmt, ALLOWED_ROOT_TYPES):
+        raise SqlGuardError(
+            f"อนุญาตเฉพาะ SELECT/WITH/UNION/INTERSECT/EXCEPT เท่านั้น ไม่ใช่ {type(stmt).__name__}"
+        )
 
     for node in stmt.walk():
         if isinstance(node, FORBIDDEN_STATEMENT_TYPES):

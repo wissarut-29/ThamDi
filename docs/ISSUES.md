@@ -44,7 +44,14 @@
 - **ปัญหา:** `pipeline.run(question, dataset_id, mode)` ต้องได้ schema DDL + การเชื่อมต่อฐานข้อมูลของ
   dataset นั้นจากฝั่งระบบ แต่ CONTRACT.md ยังไม่นิยามฟังก์ชันนี้
 - **ต้นเหตุ:** ยังไม่มีการตกลงรูปแบบฟังก์ชันระหว่าง Chalakorn กับ Suphakorn
-- **แก้อย่างไร:** ทำ stub `get_dataset(dataset_id)` ใน `pipeline.py` raise NotImplementedError ไว้ก่อน
-  เทสต์ monkeypatch แทน และร่างข้อเสนอฟังก์ชันส่งให้ Suphakorn แล้ว (ดูสรุปจบ session)
+- **แก้อย่างไร:** ทำ stub ไว้ใน `services/api/app/agent/pipeline.py` ก่อน (เทสต์ monkeypatch แทน):
+
+  ```python
+  def get_dataset(dataset_id: str) -> tuple[str, duckdb.DuckDBPyConnection]:
+      """เปิด dataset แบบ read-only คืน (schema_ddl, duckdb_connection)"""
+  ```
+
+  ข้อเสนอรูปแบบฟังก์ชันนี้ยังไม่ได้เพิ่มลง `docs/CONTRACT.md` อย่างเป็นทางการ (Suphakorn ต้อง
+  review/เพิ่มเองในไฟล์นั้น) — ตอนนี้ `pipeline.py` เรียก `get_dataset()` แล้ว raise NotImplementedError
 - **ก่อน → หลัง:** `run()` เขียนไม่ได้เลยเพราะไม่รู้จะเปิด dataset ยังไง → เขียน+เทสต์ได้ครบ รอแค่เสียบ
   ฟังก์ชันจริงจาก Suphakorn

@@ -97,7 +97,11 @@ def predict_sql(question: str, schema: str, mode: str = "M3") -> str:
     if status == "clarify":
         return "<CLARIFY>"
     if status == "error":
-        return "<REFUSE>"
+        # ไม่คืน <REFUSE> ตรงนี้ — ถ้าคืน <REFUSE> ตอนไม่มี beam ไหนผ่านเลย eval จะให้คะแนน
+        # "ถูก" กับข้อหมวด refuse ทุกข้อที่โมเดลแค่ตอบ SQL พังทุกตัว (ไม่ได้ปฏิเสธจริง) ทำให้
+        # ผลต่างระหว่างโหมดสูงเกินจริง และไม่ตรงกับ run() ที่คืน status="error" (ไม่ใช่ "refuse")
+        # คืนค่าว่างแทน — eval จะนับเป็น SQL ที่รันไม่ได้ (ไม่ valid, ไม่ correct) ตรงกับความจริง
+        return ""
     return sql
 
 

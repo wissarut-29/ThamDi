@@ -26,6 +26,22 @@ def test_cte_select_passes_cte_name_not_treated_as_table():
     assert result is not None
 
 
+@pytest.mark.parametrize("op", ["UNION", "INTERSECT", "EXCEPT"])
+def test_set_operations_pass(op):
+    sql = f"SELECT customer_id FROM customers {op} SELECT customer_id FROM orders"
+    result = check_sql(sql, ALLOWED)
+    assert "LIMIT" in result.upper()
+
+
+def test_cte_with_union_passes_and_cte_name_excluded():
+    sql = (
+        "WITH recent AS (SELECT * FROM orders) "
+        "SELECT * FROM recent UNION SELECT * FROM customers"
+    )
+    result = check_sql(sql, ALLOWED)
+    assert result is not None
+
+
 @pytest.mark.parametrize(
     "sql",
     [

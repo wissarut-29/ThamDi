@@ -11,9 +11,13 @@ hook_dir=$(cd "$(dirname "$0")" && pwd)
 staged_files=$(git diff --cached --name-only --diff-filter=ACM)
 
 # ไฟล์/โฟลเดอร์ต้องห้าม: ค่าตั้งเครื่องมือ AI, .env, ไฟล์โมเดล, data/, ml/data/, *.duckdb
-blocked_path_pattern='(^|/)\.claude/|(^|/)CLAUDE\.md$|(^|/)AGENTS\.md$|(^|/)\.cursor/|(^|/)\.env$|(^|/)\.env\.[^.]+$|(^|/)data/|(^|/)ml/data/|\.duckdb$|\.(pt|pth|bin|safetensors|ckpt|onnx|gguf|h5|pb)$'
+# data/ และ ml/data/ ต้อง anchor ด้วย ^ เท่านั้น (ไม่ใช่ (^|/)) ไม่งั้นจะจับ path ที่มีคำว่า
+# data/ อยู่ตรงไหนก็ได้ เช่น apps/web/src/data/menu.ts ซึ่งไม่เกี่ยวกับข้อมูลเทรน/ฐานข้อมูล
+blocked_path_pattern='(^|/)\.claude/|(^|/)CLAUDE\.md$|(^|/)AGENTS\.md$|(^|/)\.cursor/|(^|/)\.env$|(^|/)\.env\.[^.]+$|^data/|^ml/data/|\.duckdb$|\.(pt|pth|bin|safetensors|ckpt|onnx|gguf|h5|pb)$'
 
-path_violations=$(printf '%s\n' "$staged_files" | grep -E "$blocked_path_pattern" || true)
+# .env.example เป็นไฟล์ตัวอย่างที่ต้อง commit ได้ (ดู .gitignore: !.env.example) ยกเว้นออกจากกฎ
+# .env.* ด้านบน ไม่งั้น Suphakorn จะ commit ไฟล์นี้ไม่ได้เลยตอนทำ S1
+path_violations=$(printf '%s\n' "$staged_files" | grep -E "$blocked_path_pattern" | grep -v -E '(^|/)\.env\.example$' || true)
 if [ -n "$path_violations" ]; then
     echo "ERROR: ห้าม commit ไฟล์เหล่านี้:" >&2
     printf '%s\n' "$path_violations" | sed 's/^/  - /' >&2
