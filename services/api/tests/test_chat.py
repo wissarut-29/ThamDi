@@ -96,3 +96,12 @@ def test_keyword_filename_still_answers(api):
     body = ask(api, headers, dataset_id, "มีกี่แถว").json()
     assert body["status"] == "ok"
     assert "t_order" in body["sql"]
+
+
+def test_thai_filename_and_columns_answer(api):
+    # รีวิว PR #9: ไฟล์ชื่อไทยล้วนเคยได้ตาราง "data" (มี quote) แล้ว allowed_tables ว่าง
+    headers = login(api)
+    dataset_id = upload_csv(api, headers, name="ยอดขาย.csv").json()["dataset_id"]
+    body = ask(api, headers, dataset_id, "มีกี่แถว").json()
+    assert body["status"] == "ok"
+    assert body["rows"] == [[2]]

@@ -8,6 +8,7 @@ dataset หนึ่งชุด = ไฟล์ DuckDB หนึ่งไฟล�
 import json
 import re
 import sqlite3
+import unicodedata
 import uuid
 from contextlib import closing
 from datetime import datetime, timezone
@@ -49,11 +50,42 @@ def open_dataset(dataset_id: str) -> tuple[str, duckdb.DuckDBPyConnection]:
 
     # ปิดการอ่านไฟล์/เน็ตจากใน SQL อีกชั้น เผื่อ sql_guard พลาด (read_csv ฯลฯ จะได้ PermissionException)
     con = duckdb.connect(str(path), read_only=True, config={"enable_external_access": False})
+    return schema_ddl(con), con
+
+
+# keyword ระดับ reserved ใช้เป็นชื่อคอลัมน์ตรง ๆ ไม่ได้ ต้องใส่ "..." (เช่น order, group, select)
+_RESERVED = {
+    k
+    for (k,) in duckdb.connect()
+    .execute("SELECT keyword_name FROM duckdb_keywords() WHERE keyword_category = 'reserved'")
+    .fetchall()
+}
+
+
+def _ident(name: str) -> str:
+    # ใส่ quote เฉพาะเมื่อจำเป็น ภาษาไทยไม่ต้อง quote (DuckDB กับ sqlglot รับได้)
+    plain = (
+        name
+        and not name[0].isdigit()
+        and all(ch == "_" or ch.isalnum() or unicodedata.category(ch).startswith("M") for ch in name)
+        and name.lower() not in _RESERVED
+    )
+    return name if plain else '"' + name.replace('"', '""') + '"'
+
+
+def schema_ddl(con: duckdb.DuckDBPyConnection) -> str:
+    """DDL รูปแบบเดียวกับ eval/schemas/*.sql ที่โมเดลเห็นตอนเทรน · ไม่ใช้ duckdb_tables().sql
+    เพราะใส่ quote ให้ชื่อไทย/keyword ทุกตัว และรูปแบบเปลี่ยนตามเวอร์ชัน DuckDB"""
     rows = con.execute(
-        "SELECT sql FROM duckdb_tables() WHERE database_name = current_database() ORDER BY table_name"
+        "SELECT table_name, column_name, data_type FROM information_schema.columns "
+        "WHERE table_catalog = current_database() ORDER BY table_name, ordinal_position"
     ).fetchall()
-    ddl = "\n".join(sql.rstrip(";") + ";" for (sql,) in rows)
-    return ddl, con
+    tables: dict[str, list[str]] = {}
+    for table, column, data_type in rows:
+        tables.setdefault(table, []).append(f"    {_ident(column)} {data_type}")
+    return "\n\n".join(
+        f"CREATE TABLE {_ident(t)} (\n" + ",\n".join(cols) + "\n);" for t, cols in tables.items()
+    )
 
 
 # ---------- ข้อมูลของแอป (ผู้ใช้, รายการ dataset, ประวัติ) เก็บใน SQLite ไฟล์เดียว ----------

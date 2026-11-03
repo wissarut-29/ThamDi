@@ -85,3 +85,26 @@ def test_create_dataset_cleans_file_when_metadata_insert_fails(data_dir, monkeyp
     with pytest.raises(sqlite3.OperationalError):
         db.create_dataset("demo", "x.csv", {"x": pd.DataFrame({"a": [1]})})
     assert set((data_dir / "datasets").iterdir()) == before
+
+
+def test_schema_ddl_matches_training_format(data_dir):
+    # รีวิว PR #9: duckdb_tables().sql ใส่ quote ให้คอลัมน์ไทยทุกตัว ไม่ตรงกับ eval/schemas ที่ใช้เทรน
+    from app.agent.tools import table_names_from_ddl
+
+    con = duckdb.connect(str(data_dir / "datasets" / "th.duckdb"))
+    con.execute(
+        'CREATE TABLE t_data (สาขา VARCHAR, ยอดขาย BIGINT, name VARCHAR, "order" INTEGER, "ยอด ขาย" DOUBLE)'
+    )
+    con.close()
+    ddl, _ = db.open_dataset("th")
+    assert ddl == (
+        "CREATE TABLE t_data (\n"
+        "    สาขา VARCHAR,\n"
+        "    ยอดขาย BIGINT,\n"
+        "    name VARCHAR,\n"
+        '    "order" INTEGER,\n'
+        '    "ยอด ขาย" DOUBLE\n'
+        ");"
+    )
+    assert table_names_from_ddl(ddl) == {"t_data"}
+    duckdb.connect().execute(ddl)  # DDL ที่สร้างต้องรันได้จริง
