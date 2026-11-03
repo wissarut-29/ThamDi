@@ -1,0 +1,19 @@
+#!/bin/sh
+# ตรวจข้อความ commit ว่าไม่มีลายน้ำ AI (ดู docs/CONVENTIONS.md)
+set -e
+# บังคับ byte-oriented matching: Git for Windows ตั้ง LC_CTYPE=C.UTF-8 ให้ hook
+# ซึ่งทำให้ GNU grep ใช้ wide-char matching ที่พัง (wchar_t 16 บิตบน Windows ไม่รองรับ
+# โค้ดพอยต์เกิน U+FFFF เช่น 🤖) — ตั้ง C locale ให้จับคู่ไบต์ตรงแทน ทำงานเหมือนกันทุก OS
+export LC_ALL=C
+
+msg_file="$1"
+hook_dir=$(cd "$(dirname "$0")" && pwd)
+. "$hook_dir/watermark-patterns.sh"
+
+if grep -iE "$WATERMARK_PATTERN" "$msg_file" >/dev/null 2>&1; then
+    echo "ERROR: ข้อความ commit มีลายน้ำ AI (Co-Authored-By ของเครื่องมือ AI, Generated with/by, ลิงก์ session, หรือ 🤖)" >&2
+    echo "แก้ข้อความ commit แล้วลองใหม่ — ห้ามใช้ --no-verify เพื่อข้ามการตรวจนี้" >&2
+    exit 1
+fi
+
+exit 0

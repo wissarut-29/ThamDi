@@ -20,6 +20,19 @@
 - **ห้ามมีลายน้ำ AI** ใน commit, PR, โค้ด และเอกสาร เช่น บรรทัดเครดิตหรือผู้ร่วมเขียนที่เครื่องมือ AI ใส่ให้อัตโนมัติ ถ้าใช้เครื่องมือช่วยเขียน ให้ปิด attribution ของเครื่องมือนั้นก่อน
 - ห้าม commit `.env`, ไฟล์โมเดล, `data/`, `ml/data/`, `*.duckdb` และไฟล์ตั้งค่าเครื่องมือ AI (รายการอยู่ใน `.gitignore`) — repo นี้เป็น public
 
+## ติดตั้ง git hooks (ตรวจลายน้ำ AI)
+
+รันครั้งเดียวหลัง clone (ใช้ได้ทั้ง Git Bash บน Windows และ macOS/Linux):
+
+```bash
+git config core.hooksPath scripts/hooks
+chmod +x scripts/hooks/commit-msg scripts/hooks/pre-commit
+```
+
+- `scripts/hooks/commit-msg` บล็อก commit ที่มี `Co-Authored-By` ของเครื่องมือ AI, `Generated with/by`, ลิงก์ session (เช่น claude.ai/code), หรือ 🤖
+- `scripts/hooks/pre-commit` บล็อกไฟล์ `.claude/`, `CLAUDE.md`, `AGENTS.md`, `.cursor/`, `.env`, ไฟล์โมเดล, `data/`, `ml/data/`, `*.duckdb` และข้อความลายน้ำ AI ใน diff ที่ staged (ยกเว้น `.gitignore` และไฟล์ hook เอง)
+- ถ้า hook บล็อกจริง ให้แก้ข้อความ/ไฟล์แล้ว commit ใหม่ **ห้ามใช้ `--no-verify`** เพื่อข้ามการตรวจ
+
 ## ไฟล์ของใคร
 
 ดู `docs/STRUCTURE.md` ถ้าจะแก้ไฟล์ของคนอื่น ให้ขอให้เจ้าของไฟล์ review ใน PR

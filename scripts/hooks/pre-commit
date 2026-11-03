@@ -1,0 +1,37 @@
+#!/bin/sh
+# ตรวจไฟล์/เนื้อหาที่ staged ว่าไม่มีของต้องห้าม (ดู docs/CONVENTIONS.md)
+set -e
+# บังคับ byte-oriented matching (เหตุผลเดียวกับ commit-msg): กัน GNU grep wide-char
+# matching พังกับโค้ดพอยต์เกิน U+FFFF อย่าง 🤖 บน Windows
+export LC_ALL=C
+
+hook_dir=$(cd "$(dirname "$0")" && pwd)
+. "$hook_dir/watermark-patterns.sh"
+
+staged_files=$(git diff --cached --name-only --diff-filter=ACM)
+
+# ไฟล์/โฟลเดอร์ต้องห้าม: ค่าตั้งเครื่องมือ AI, .env, ไฟล์โมเดล, data/, ml/data/, *.duckdb
+blocked_path_pattern='(^|/)\.claude/|(^|/)CLAUDE\.md$|(^|/)AGENTS\.md$|(^|/)\.cursor/|(^|/)\.env$|(^|/)\.env\.[^.]+$|(^|/)data/|(^|/)ml/data/|\.duckdb$|\.(pt|pth|bin|safetensors|ckpt|onnx|gguf|h5|pb)$'
+
+path_violations=$(printf '%s\n' "$staged_files" | grep -E "$blocked_path_pattern" || true)
+if [ -n "$path_violations" ]; then
+    echo "ERROR: ห้าม commit ไฟล์เหล่านี้:" >&2
+    printf '%s\n' "$path_violations" | sed 's/^/  - /' >&2
+    exit 1
+fi
+
+# เนื้อหาลายน้ำ AI ใน diff ที่ staged — ยกเว้น .gitignore และไฟล์ hook เอง ตรวจเฉพาะบรรทัดที่เพิ่มเข้ามา
+diff_content=$(git diff --cached -- . \
+    ':!.gitignore' \
+    ':!scripts/hooks/commit-msg' \
+    ':!scripts/hooks/pre-commit' \
+    ':!scripts/hooks/watermark-patterns.sh' \
+    2>/dev/null | grep -E '^\+[^+]' || true)
+
+if printf '%s\n' "$diff_content" | grep -iE "$WATERMARK_PATTERN" >/dev/null 2>&1; then
+    echo "ERROR: พบข้อความลายน้ำ AI ในเนื้อหาที่ staged" >&2
+    echo "แก้เนื้อหาแล้วลองใหม่ — ห้ามใช้ --no-verify เพื่อข้ามการตรวจนี้" >&2
+    exit 1
+fi
+
+exit 0
