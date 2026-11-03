@@ -1,0 +1,6 @@
+# Only for MODEL_BACKEND=local (install on top of requirements.txt)
+# For GPU, install torch from pytorch.org first, then this file
+torch>=2.3
+transformers>=4.44
+safetensors>=0.4
+accelerate>=0.33

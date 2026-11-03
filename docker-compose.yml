@@ -1,0 +1,33 @@
+# รันทั้งระบบ: docker compose up --build  → เว็บ http://localhost:3000 · API http://localhost:8000
+# ค่าตั้งมาจาก .env (คัดลอกจาก .env.example) · โมเดลจริง: make model แล้วตั้ง MODEL_BACKEND=local
+# และ build ด้วย INSTALL_MODEL=1 (ดู docs/RUNBOOK.md)
+services:
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+      args:
+        INSTALL_MODEL: ${INSTALL_MODEL:-0}
+    env_file: .env
+    environment:
+      # path ใน container (relative นับจาก /app)
+      DATA_DIR: data
+      MODEL_PATH: models/thamdi
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models:ro
+      - ./eval/results:/app/eval/results:ro
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: apps/web
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
