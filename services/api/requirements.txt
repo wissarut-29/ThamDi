@@ -2,7 +2,8 @@
 fastapi>=0.115
 uvicorn[standard]>=0.30
 python-multipart>=0.0.9
-duckdb>=1.1
+# duckdb 1.1-1.3 cannot register pandas 3 DataFrames (Data type 'str' not recognized)
+duckdb>=1.4
 sqlglot==30.27.0
 pydantic-settings>=2.4
 pyjwt>=2.9
