@@ -33,8 +33,15 @@
   - seed=42
 
 ## ไฟล์โมเดล
-- ลิงก์ดาวน์โหลด (ใช้กับ `make model`): https://drive.google.com/drive/folders/1oaQs9n2w3hh98_xpOImLDimZWRKIkKg-?usp=drive_link
+- ลิงก์: https://drive.google.com/drive/folders/1oaQs9n2w3hh98_xpOImLDimZWRKIkKg-?usp=drive_link
   (Google Drive — ไม่ได้ commit เข้า git เพราะเป็นไฟล์โมเดลจริง `.gitignore` กันไว้)
+- **⚠️ ลิงก์นี้เป็นโฟลเดอร์ ใช้กับ `make model` (`scripts/tasks.sh` ของ Suphakorn ซึ่งเรียก
+  `curl -fL` แล้วแกะ zip) ไม่ได้ตรง ๆ** — เปิดโฟลเดอร์จะได้หน้า HTML ไม่ใช่ไฟล์ zip ตรง
+  `curl` จะได้หน้าเว็บมาแทนไฟล์ และ `unzip`/`zipfile` จะพังด้วย `BadZipFile` (พบจากรีวิวของ
+  Wissarut บน PR #12) **วิธีใช้ตอนนี้: ดาวน์โหลดโฟลเดอร์มาด้วยมือ** (เปิดลิงก์ → เลือกไฟล์ทั้งหมด
+  → Download → Google Drive จะซิปให้เองเป็นไฟล์เดียว) แล้ววางที่ `MODEL_PATH` (`models/thamdi/`
+  ตามค่าเริ่มต้นใน PR #9) — ยังไม่ได้ตกลงกับ Suphakorn ว่าจะแก้ `scripts/tasks.sh` ให้รองรับ
+  ลิงก์ Drive โดยตรง หรือจะย้ายไปโฮสต์ไฟล์ zip เดี่ยวที่อื่นแทน (ต้องคุยกันอีกที)
 - เวอร์ชัน: v1 (ประตูแรก ยังไม่ผ่านการปรับจากข้อผิดของ val — ดู C4)
 
 ## ข้อจำกัด
