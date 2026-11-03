@@ -33,8 +33,8 @@
   - seed=42
 
 ## ไฟล์โมเดล
-- ลิงก์ดาวน์โหลด (ใช้กับ `make model`): **TODO — รอ Chalakorn แชร์ลิงก์ Google Drive หรือ
-  อัปโหลดที่อื่น** (ตอนนี้อยู่ในเครื่อง Chalakorn ที่ `models/thamdi/` ยังไม่ได้ส่งต่อ)
+- ลิงก์ดาวน์โหลด (ใช้กับ `make model`): https://drive.google.com/drive/folders/1oaQs9n2w3hh98_xpOImLDimZWRKIkKg-?usp=drive_link
+  (Google Drive — ไม่ได้ commit เข้า git เพราะเป็นไฟล์โมเดลจริง `.gitignore` กันไว้)
 - เวอร์ชัน: v1 (ประตูแรก ยังไม่ผ่านการปรับจากข้อผิดของ val — ดู C4)
 
 ## ข้อจำกัด
