@@ -52,3 +52,11 @@ def test_model_not_loaded_without_demo_answer(api, monkeypatch):
     body = ask(api, headers, dataset_id, "มีกี่สาขา").json()
     assert body["status"] == "error"
     assert body["answer"] == chat.NOT_READY_TEXT
+
+
+def test_chat_rate_limited_per_user(api):
+    headers = login(api)
+    dataset_id = upload_csv(api, headers).json()["dataset_id"]
+    codes = [ask(api, headers, dataset_id, "มีกี่สาขา").status_code for _ in range(21)]
+    assert codes[:20] == [200] * 20
+    assert codes[20] == 429

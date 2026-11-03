@@ -3,11 +3,14 @@
 เจ้าของ: Suphakorn · งาน: S3 · สัญญาอินเทอร์เฟซ: docs/CONTRACT.md
 """
 
+import threading
+import time
+from collections import defaultdict, deque
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from . import db
@@ -67,3 +70,49 @@ def require_dataset_owner(dataset_id: str, username: str) -> dict:
     if dataset is None or dataset["owner"] != username:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ไม่พบ dataset")
     return dataset
+
+
+# ---------- rate limit (S-09) · เก็บในหน่วยความจำ พอสำหรับเครื่องเดโมเครื่องเดียว ----------
+
+_hits: dict[tuple[str, str], deque] = defaultdict(deque)
+_hits_lock = threading.Lock()
+
+
+def reset_rate_limits() -> None:
+    with _hits_lock:
+        _hits.clear()
+
+
+def _check_rate(bucket: str, key: str, limit: int, window_s: float) -> None:
+    now = time.monotonic()
+    with _hits_lock:
+        hits = _hits[(bucket, key)]
+        while hits and now - hits[0] > window_s:
+            hits.popleft()
+        if len(hits) >= limit:
+            retry = max(1, int(window_s - (now - hits[0])))
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"ส่งคำขอถี่เกินไป รออีก {retry} วินาทีแล้วลองใหม่",
+                headers={"Retry-After": str(retry)},
+            )
+        hits.append(now)
+
+
+def limit_by_ip(bucket: str, limit: int, window_s: float = 60):
+    """dependency: จำกัดตาม IP (ใช้กับ login กันเดารหัส)"""
+
+    def dependency(request: Request) -> None:
+        _check_rate(bucket, request.client.host if request.client else "-", limit, window_s)
+
+    return dependency
+
+
+def limit_by_user(bucket: str, limit: int, window_s: float = 60):
+    """dependency: จำกัดตามผู้ใช้ (ใช้กับ chat/upload กันถามรัวจนโมเดลค้าง) · คืนชื่อผู้ใช้"""
+
+    def dependency(username: str = Depends(current_user)) -> str:
+        _check_rate(bucket, username, limit, window_s)
+        return username
+
+    return dependency

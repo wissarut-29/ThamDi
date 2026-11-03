@@ -29,3 +29,12 @@ def test_model_info(api):
     info = api.get("/api/model", headers=login(api)).json()
     assert info["backend"] == "fake"
     assert info["loaded"] is True
+
+
+def test_login_rate_limited(api):
+    codes = [
+        api.post("/api/auth/login", json={"username": "demo", "password": "wrong"}).status_code
+        for _ in range(11)
+    ]
+    assert codes[:10] == [401] * 10
+    assert codes[10] == 429

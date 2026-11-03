@@ -18,7 +18,7 @@ from .agent import pipeline
 from .config import get_settings
 from .routers import auth, chat, datasets, model
 from .routers import eval as eval_router
-from .security import current_user, hash_password
+from .security import current_user, hash_password, reset_rate_limits
 
 DEMO_USERNAME = "demo"
 log = logging.getLogger(__name__)
@@ -28,6 +28,7 @@ log = logging.getLogger(__name__)
 async def lifespan(_app: FastAPI):
     settings = get_settings()
     settings.warn_insecure()
+    reset_rate_limits()
     db.init_db()
     # ผู้ใช้เดโมใช้รหัสจาก DEMO_PASSWORD ใน .env (ไม่ฮาร์ดโค้ด)
     if settings.DEMO_PASSWORD.strip():

@@ -9,13 +9,15 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from .. import db
 from ..ingest import MAX_BYTES, IngestError, read_upload
-from ..security import current_user
+from ..security import current_user, limit_by_user
 
 router = APIRouter(prefix="/api/datasets", tags=["datasets"])
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-def upload(file: UploadFile = File(...), username: str = Depends(current_user)) -> dict:
+def upload(
+    file: UploadFile = File(...), username: str = Depends(limit_by_user("upload", limit=10))
+) -> dict:
     # อ่านเกินขีดจำกัด 1 byte เพื่อรู้ว่าไฟล์ใหญ่เกิน โดยไม่ต้องอ่านทั้งไฟล์เข้าหน่วยความจำ
     content = file.file.read(MAX_BYTES + 1)
     try:

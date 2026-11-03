@@ -3,11 +3,11 @@
 เจ้าของ: Suphakorn · งาน: S3 · สัญญาอินเทอร์เฟซ: docs/CONTRACT.md หัวข้อ 4
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from .. import db
-from ..security import create_token, verify_password
+from ..security import create_token, limit_by_ip, verify_password
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -17,7 +17,7 @@ class LoginIn(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 
 
-@router.post("/login")
+@router.post("/login", dependencies=[Depends(limit_by_ip("login", limit=10))])
 def login(body: LoginIn) -> dict:
     password_hash = db.get_password_hash(body.username)
     # ตอบแบบเดียวกันทั้งไม่มีผู้ใช้และรหัสผิด ไม่บอกว่ามีชื่อนี้หรือไม่

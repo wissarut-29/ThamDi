@@ -16,7 +16,7 @@ from .. import db
 from ..agent import answer, demo, pipeline
 from ..agent.model import ModelNotReady, model_info
 from ..config import get_settings
-from ..security import current_user, require_dataset_owner
+from ..security import limit_by_user, require_dataset_owner
 
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["chat"])
@@ -36,7 +36,7 @@ def _demo_answer(question: str) -> dict | None:
 
 
 @router.post("/chat")
-def chat(body: ChatIn, username: str = Depends(current_user)) -> dict:
+def chat(body: ChatIn, username: str = Depends(limit_by_user("chat", limit=20))) -> dict:
     require_dataset_owner(body.dataset_id, username)
     question = body.question.strip()
 
