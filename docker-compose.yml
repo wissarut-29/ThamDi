@@ -16,7 +16,8 @@ services:
     volumes:
       - ./data:/app/data
       - ./models:/app/models:ro
-      - ./eval/results:/app/eval/results:ro
+      # ทั้งโฟลเดอร์ eval: routers/eval.py อ่าน eval/results/ และ demo.lookup() อ่าน eval/demo_answers.json (DEMO_MODE)
+      - ./eval:/app/eval:ro
     ports:
       - "8000:8000"
     restart: unless-stopped
