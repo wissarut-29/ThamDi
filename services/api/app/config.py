@@ -4,6 +4,7 @@
 """
 
 import logging
+import secrets
 from pathlib import Path
 from typing import Literal
 
@@ -12,6 +13,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 _PLACEHOLDER_SECRETS = {"", "change-me"}
+# ใช้แทน JWT_SECRET ที่ยังเป็นค่าตัวอย่าง: สุ่มครั้งเดียวต่อ process ใครรู้ค่าใน .env.example ก็ปลอม token ไม่ได้
+# (token เก่าใช้ไม่ได้หลังรีสตาร์ต ต้อง login ใหม่)
+_RUNTIME_JWT_SECRET = secrets.token_urlsafe(32)
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +43,21 @@ class Settings(BaseSettings):
     @classmethod
     def _from_repo_root(cls, value: Path) -> Path:
         return value if value.is_absolute() else REPO_ROOT / value
+
+    @property
+    def jwt_secret(self) -> str:
+        """secret ที่ใช้เซ็น/ตรวจ JWT จริง · ห้ามใช้ JWT_SECRET ตรง ๆ"""
+        if self.JWT_SECRET.strip() in _PLACEHOLDER_SECRETS:
+            return _RUNTIME_JWT_SECRET
+        return self.JWT_SECRET
+
+    @property
+    def demo_password_usable(self) -> bool:
+        """เครื่องเดโม (local) ห้ามสร้างผู้ใช้ demo ด้วยรหัสตัวอย่าง · fake (เครื่องพัฒนา) ยอมให้ใช้ได้"""
+        password = self.DEMO_PASSWORD.strip()
+        if not password:
+            return False
+        return not (self.MODEL_BACKEND == "local" and password in _PLACEHOLDER_SECRETS)
 
     @property
     def cors_origins(self) -> list[str]:

@@ -47,7 +47,8 @@ def open_dataset(dataset_id: str) -> tuple[str, duckdb.DuckDBPyConnection]:
     if not path.is_file():
         raise KeyError(dataset_id)
 
-    con = duckdb.connect(str(path), read_only=True)
+    # ปิดการอ่านไฟล์/เน็ตจากใน SQL อีกชั้น เผื่อ sql_guard พลาด (read_csv ฯลฯ จะได้ PermissionException)
+    con = duckdb.connect(str(path), read_only=True, config={"enable_external_access": False})
     rows = con.execute(
         "SELECT sql FROM duckdb_tables() WHERE database_name = current_database() ORDER BY table_name"
     ).fetchall()
@@ -108,6 +109,11 @@ def upsert_user(username: str, password_hash: str) -> None:
             "ON CONFLICT(username) DO UPDATE SET password_hash = excluded.password_hash",
             (username, password_hash),
         )
+
+
+def delete_user(username: str) -> None:
+    with closing(_app_db()) as con, con:
+        con.execute("DELETE FROM users WHERE username = ?", (username,))
 
 
 def get_password_hash(username: str) -> str | None:

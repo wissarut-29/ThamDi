@@ -35,7 +35,7 @@ def verify_password(password: str, password_hash: str) -> bool:
 def create_token(username: str) -> str:
     now = datetime.now(timezone.utc)
     payload = {"sub": username, "iat": now, "exp": now + TOKEN_TTL}
-    return jwt.encode(payload, get_settings().JWT_SECRET, algorithm=_ALGORITHM)
+    return jwt.encode(payload, get_settings().jwt_secret, algorithm=_ALGORITHM)
 
 
 def _unauthorized() -> HTTPException:
@@ -54,7 +54,7 @@ def current_user(
         raise _unauthorized()
     try:
         payload = jwt.decode(
-            credentials.credentials, get_settings().JWT_SECRET, algorithms=[_ALGORITHM]
+            credentials.credentials, get_settings().jwt_secret, algorithms=[_ALGORITHM]
         )
     except jwt.PyJWTError as exc:
         raise _unauthorized() from exc

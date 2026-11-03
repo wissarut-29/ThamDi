@@ -57,3 +57,11 @@ def test_connection_closes_without_explicit_close(data_dir):
     writer = duckdb.connect(str(data_dir / "datasets" / "ds1.duckdb"))
     writer.execute("INSERT INTO sales VALUES ('สาขา 3', 1)")
     writer.close()
+
+
+def test_open_dataset_blocks_file_access_from_sql(data_dir):
+    # ชั้นกันซ้อนจากรีวิว PR #9: ต่อให้ sql_guard พลาด SQL ก็อ่านไฟล์ในเครื่องไม่ได้
+    (data_dir / "secret.csv").write_text("a,b\n1,2\n", encoding="utf-8")
+    _, con = db.open_dataset("ds1")
+    with pytest.raises(duckdb.Error):
+        con.execute(f"SELECT * FROM read_csv('{(data_dir / 'secret.csv').as_posix()}')").fetchall()

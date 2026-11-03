@@ -56,7 +56,8 @@ API_URL=http://localhost:8000 DEMO_PASSWORD=<รหัสใน .env> sh scripts
 | อาการ | วิธีแก้ |
 |---|---|
 | หน้าเว็บขึ้น "ติดต่อเซิร์ฟเวอร์ไม่ได้" | API ไม่ได้รัน → `docker compose ps` หรือเปิด `sh scripts/tasks.sh dev` ใหม่ · เช็ก `CORS_ORIGINS=http://localhost:3000` ใน `.env` |
-| login ไม่ผ่านทั้งที่รหัสถูก | แก้ `DEMO_PASSWORD` แล้วต้อง restart API (รหัสถูกตั้งตอนเริ่ม) |
+| login ไม่ผ่านทั้งที่รหัสถูก | แก้ `DEMO_PASSWORD` แล้วต้อง restart API (รหัสถูกตั้งตอนเริ่ม) · ถ้า `MODEL_BACKEND=local` แต่ `DEMO_PASSWORD` ยังเป็น `change-me` หรือว่าง ระบบจะไม่สร้างผู้ใช้ demo เลย (ดู log ของ API) |
+| login แล้วหลุดทุกครั้งที่ restart API | `JWT_SECRET` ยังเป็น `change-me` ระบบจึงสุ่ม secret ใหม่ทุกครั้งที่เริ่ม → ตั้ง `JWT_SECRET` ใน `.env` |
 | `ports are not available` / port 3000 หรือ 8000 ถูกใช้ | ปิดโปรแกรมที่ใช้ port นั้น (เช่น `npm run dev` ที่ค้างไว้) แล้ว `docker compose up -d` ใหม่ |
 | หน้าเกี่ยวกับโมเดลขึ้น "ยังไม่พร้อม" นาน | ไม่มีไฟล์ใน `models/thamdi` หรือ RAM ไม่พอ → ดู log: `docker compose logs api` · ใช้ `DEMO_MODE=true` ระหว่างนั้น |
 | ตอบช้ามาก (> 5 วินาทีต่อข้อ บน CPU) | รันตรงบนเครื่องที่มี GPU (ติดตั้ง torch แบบ CUDA ตาม pytorch.org) · Docker + GPU บน Windows ต้อง WSL2 |

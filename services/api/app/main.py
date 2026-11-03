@@ -31,10 +31,12 @@ async def lifespan(_app: FastAPI):
     reset_rate_limits()
     db.init_db()
     # ผู้ใช้เดโมใช้รหัสจาก DEMO_PASSWORD ใน .env (ไม่ฮาร์ดโค้ด)
-    if settings.DEMO_PASSWORD.strip():
+    if settings.demo_password_usable:
         db.upsert_user(DEMO_USERNAME, hash_password(settings.DEMO_PASSWORD))
     else:
-        log.warning("DEMO_PASSWORD ว่าง จะ login ผู้ใช้เดโมไม่ได้")
+        # ลบผู้ใช้ demo ที่อาจค้างจากรอบก่อน ไม่ให้ login ด้วยรหัสเดิมได้
+        db.delete_user(DEMO_USERNAME)
+        log.warning("ไม่สร้างผู้ใช้ demo: ตั้ง DEMO_PASSWORD ใน .env ก่อน (ห้ามว่าง/change-me บนเครื่องเดโม)")
 
     # โหลดโมเดลใน thread แยก API ตอบได้ทันที (ระหว่างนั้น /api/model บอก loaded=false)
     threading.Thread(target=model_backend.preload, name="model-preload", daemon=True).start()
