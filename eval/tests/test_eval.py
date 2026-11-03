@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import run  # noqa: E402
+import run
 
 
 def test_gold_set_passes_check():
@@ -12,7 +12,7 @@ def test_gold_set_passes_check():
 
 
 def test_match_ignores_row_order_and_numeric_type():
-    assert run.results_match([(1, Decimal("2.50")), (2, Decimal("3"))], [(2, 3.0), (1, 2.5)])
+    assert run.results_match([(1, Decimal("2.50")), (2, Decimal(3))], [(2, 3.0), (1, 2.5)])
 
 
 def test_match_allows_extra_columns():
@@ -86,6 +86,18 @@ def test_check_gold_accepts_valid_val(tmp_path, monkeypatch):
     _use_val(tmp_path, monkeypatch, [_val_item(), _val_item(id="v002", category="refuse", gold_sql="<REFUSE>")])
     assert run.check_gold() == 0
     assert "val" in run.load_sets()
+
+
+def test_val_unseen_split(tmp_path, monkeypatch):
+    _use_val(tmp_path, monkeypatch, [_val_item(), _val_item(id="v002", question="มีสินค้ากี่ชิ้น", unseen=False)])
+    sets = run.load_sets()
+    assert [item["id"] for item in sets["val_unseen"]] == ["v001"]
+    assert len(sets["val"]) == 2
+
+
+def test_no_val_unseen_when_all_seen(tmp_path, monkeypatch):
+    _use_val(tmp_path, monkeypatch, [_val_item(unseen=False)])
+    assert "val_unseen" not in run.load_sets()
 
 
 def test_check_gold_rejects_bad_val(tmp_path, monkeypatch):

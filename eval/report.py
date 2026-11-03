@@ -35,8 +35,8 @@ def build_markdown(data: dict) -> str:
         lines += ["> ⚠️ **ผลจำลอง** ไม่ใช่ผลจากโมเดลจริง ห้ามใช้ใน README หรือสไลด์", ""]
     model = data["model"]
     lines += [
-        f"โมเดล: {model.get('name') or '-'} {model.get('version') or ''} · "
-        f"วันที่: {data['generated_at']} · เครื่อง: {data['machine']}",
+        (f"โมเดล: {model.get('name') or '-'} {model.get('version') or ''} · "
+         f"วันที่: {data['generated_at']} · เครื่อง: {data['machine']}"),
         "",
         "**Execution accuracy** (ในวงเล็บ: สัดส่วน SQL ที่รันได้)",
         "",
