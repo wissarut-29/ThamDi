@@ -44,3 +44,15 @@ def test_bad_files_rejected(filename, content):
 def test_too_large_rejected():
     with pytest.raises(ingest.IngestError):
         ingest.read_upload("x.csv", b"a\n" + b"1\n" * (ingest.MAX_BYTES // 2 + 1))
+
+
+def test_excel_dates_without_time_become_date(tmp_path):
+    import duckdb
+
+    buf = io.BytesIO()
+    frame = pd.DataFrame({"sale_date": pd.to_datetime(["2026-01-01", "2026-01-02"]), "amount": [1, 2]})
+    frame.to_excel(buf, sheet_name="sales", index=False)
+    tables = ingest.read_upload("s.xlsx", buf.getvalue())
+    con = duckdb.connect()
+    con.register("t", tables["sales"])
+    assert con.execute("SELECT typeof(sale_date) FROM t LIMIT 1").fetchone()[0] == "DATE"

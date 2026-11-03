@@ -55,6 +55,14 @@ def _dedupe(names: list[str]) -> list[str]:
 def _clean(frame: pd.DataFrame) -> pd.DataFrame:
     frame = frame.dropna(how="all").dropna(axis=1, how="all")
     frame.columns = _dedupe([column_name(c, i) for i, c in enumerate(frame.columns)])
+    for col in frame.columns:
+        series = frame[col]
+        # วันที่จาก Excel มาเป็น datetime เสมอ ถ้าไม่มีเวลาเลยเก็บเป็น DATE (แบบเดียวกับ schema ที่เทรน)
+        if not pd.api.types.is_datetime64_any_dtype(series):
+            continue
+        values = series.dropna()
+        if (values.dt.normalize() == values).all():
+            frame[col] = series.dt.date
     return frame
 
 
