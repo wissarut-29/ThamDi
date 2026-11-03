@@ -164,25 +164,14 @@ def pipeline_predictor():
 
 # ---------- คำสั่ง ----------
 
-def check_gold() -> int:
-    """ตรวจชุดทดสอบ: จำนวนข้อ, หมวด, สัดส่วน unseen, id ซ้ำ และ SQL เฉลยต้องรันได้และได้ผลอย่างน้อย 1 แถว"""
+def check_items(items: list[dict]) -> list[str]:
+    """กติกาที่ทุกชุดต้องผ่าน: id ไม่ซ้ำ, หมวดรู้จัก, มีไฟล์ schema และ SQL เฉลยรันได้และได้ผลอย่างน้อย 1 แถว"""
     problems: list[str] = []
-    items = load_jsonl(SETS_DIR / "handwritten.jsonl")
-
     ids = [item["id"] for item in items]
     for dup in [i for i, n in Counter(ids).items() if n > 1]:
         problems.append(f"id ซ้ำ: {dup}")
-    if len(items) != HANDWRITTEN_SIZE:
-        problems.append(f"มี {len(items)} ข้อ ต้องมี {HANDWRITTEN_SIZE}")
-    by_cat = Counter(item["category"] for item in items)
-    for cat in set(by_cat) - set(CATEGORIES):
+    for cat in sorted({item["category"] for item in items} - set(CATEGORIES)):
         problems.append(f"หมวดไม่รู้จัก: {cat}")
-    for cat in CATEGORIES:
-        if by_cat[cat] != HANDWRITTEN_SIZE // len(CATEGORIES):
-            problems.append(f"หมวด {cat} มี {by_cat[cat]} ข้อ")
-    n_unseen = sum(1 for item in items if item.get("unseen"))
-    if n_unseen * 2 < len(items):
-        problems.append(f"unseen มี {n_unseen} ข้อ ต้องมีอย่างน้อยครึ่งหนึ่ง")
 
     for item in items:
         if not (SCHEMAS_DIR / f"{item['schema']}.sql").exists():
@@ -200,11 +189,55 @@ def check_gold() -> int:
             continue
         if not rows or all(v is None for row in rows for v in row):
             problems.append(f"{item['id']}: SQL เฉลยไม่มีผลลัพธ์")
+    return problems
+
+
+def check_val(val: list[dict], handwritten: list[dict]) -> list[str]:
+    """val จาก Chalakorn: กติการ่วม + schema ต้องขึ้นต้น val_ (ไม่เขียนทับ schema ทดสอบ)
+    และห้ามมี id หรือคำถามซ้ำกับ handwritten"""
+    problems = check_items(val)
+    for schema in sorted({item["schema"] for item in val if not item["schema"].startswith("val_")}):
+        problems.append(f"schema {schema} ต้องขึ้นต้นด้วย val_")
+    hw_ids = {item["id"] for item in handwritten}
+    hw_questions = {item["question"].strip() for item in handwritten}
+    for item in val:
+        if item["id"] in hw_ids:
+            problems.append(f"{item['id']}: id ซ้ำกับ handwritten")
+        if item["question"].strip() in hw_questions:
+            problems.append(f"{item['id']}: คำถามซ้ำกับ handwritten")
+    return problems
+
+
+def check_gold() -> int:
+    """ตรวจชุดทดสอบ handwritten (จำนวนข้อ, หมวด, สัดส่วน unseen) และ val ถ้ามี ด้วยกติการ่วมของ check_items"""
+    items = load_jsonl(SETS_DIR / "handwritten.jsonl")
+    problems = check_items(items)
+    if len(items) != HANDWRITTEN_SIZE:
+        problems.append(f"มี {len(items)} ข้อ ต้องมี {HANDWRITTEN_SIZE}")
+    by_cat = Counter(item["category"] for item in items)
+    for cat in CATEGORIES:
+        if by_cat[cat] != HANDWRITTEN_SIZE // len(CATEGORIES):
+            problems.append(f"หมวด {cat} มี {by_cat[cat]} ข้อ")
+    n_unseen = sum(1 for item in items if item.get("unseen"))
+    if n_unseen * 2 < len(items):
+        problems.append(f"unseen มี {n_unseen} ข้อ ต้องมีอย่างน้อยครึ่งหนึ่ง")
 
     print(f"handwritten: {len(items)} ข้อ · unseen {n_unseen} · " +
           " ".join(f"{c}={by_cat[c]}" for c in CATEGORIES))
     for p in problems:
         print("  ✗", p)
+
+    val_path = SETS_DIR / "val.jsonl"
+    if val_path.exists():
+        val = load_jsonl(val_path)
+        val_problems = check_val(val, items)
+        val_cat = Counter(item["category"] for item in val)
+        print(f"val: {len(val)} ข้อ · unseen {sum(1 for item in val if item.get('unseen'))} · " +
+              " ".join(f"{c}={val_cat[c]}" for c in CATEGORIES))
+        for p in val_problems:
+            print("  ✗", p)
+        problems += val_problems
+
     print("check-gold:", "ผ่าน" if not problems else f"ไม่ผ่าน ({len(problems)} ปัญหา)")
     return 1 if problems else 0
 
