@@ -8,7 +8,17 @@ measure_expr = ตัวเลขที่เอาไปรวม/จัดอ�
 schema `school` ใช้เฉพาะ val เท่านั้น (ดู ml/gen_data.py) ห้ามเอาไปเทรน
 """
 
+import zlib
 from dataclasses import dataclass, field
+
+
+def stable_seed(name: str) -> int:
+    """hash คงที่ของชื่อ schema ใช้ผสมกับ seed หลักตอนสร้าง sub-seed ต่อ schema
+
+    ห้ามใช้ hash() ของ Python ตรง ๆ — มันสุ่มใหม่ทุก process (PYTHONHASHSEED) ทำให้ข้อมูลที่
+    "seed เดิม" สร้างใหม่ไม่ได้เหมือนเดิมทุกครั้ง (พบจากรีวิวของ Wissarut บน PR #12)
+    """
+    return zlib.crc32(name.encode("utf-8"))
 
 
 @dataclass

@@ -67,6 +67,14 @@ def gen_aggregate(spec, rng):
     return question, sql
 
 
+GROUP_TEMPLATES = [
+    "แต่ละ{col}ของ{thai}มียอดรวมเท่าไหร่",
+    "สรุปยอดรวมของ{thai}แยกตาม{col}ให้ดูหน่อย",
+    "{thai}แต่ละ{col}มียอดรวมเท่าไหร่",
+    "อยากรู้ยอดรวมของ{thai}โดยแยกตาม{col}",
+]
+
+
 def gen_group(spec, rng):
     if spec.dimA.cat_cols:
         col, _ = rng.choice(list(spec.dimA.cat_cols.items()))
@@ -79,7 +87,7 @@ def gen_group(spec, rng):
         f"JOIN {spec.dimA.table} ON {spec.dimA.table}.{spec.dimA.pk} = {spec.fact.table}.{spec.fact.fk_to_dimA} "
         if group_table == spec.dimA.table else ""
     )
-    question = f"แต่ละ{_col_thai(col)}ของ{spec.thai}มียอดรวมเท่าไหร่"
+    question = rng.choice(GROUP_TEMPLATES).format(col=_col_thai(col), thai=spec.thai)
     sql = (
         f"SELECT {group_table}.{col}, SUM({spec.measure_expr}) AS total "
         f"FROM {spec.fact.table} {join_clause}{spec.measure_join} "
@@ -104,27 +112,58 @@ def gen_rank(spec, rng):
     return question, sql.strip()
 
 
+JOIN_DIM2_TEMPLATES = {
+    "มากที่สุด": [
+        "{dim2}หมวดไหนของ{thai}มียอดรวมมากที่สุด",
+        "{thai}หมวด{dim2}ไหนทำยอดรวมได้มากที่สุด",
+        "อยากรู้ว่า{dim2}หมวดไหนของ{thai}มียอดรวมสูงสุด",
+    ],
+    "น้อยที่สุด": [
+        "{dim2}หมวดไหนของ{thai}มียอดรวมน้อยที่สุด",
+        "{thai}หมวด{dim2}ไหนทำยอดรวมได้น้อยที่สุด",
+        "อยากรู้ว่า{dim2}หมวดไหนของ{thai}มียอดรวมต่ำสุด",
+    ],
+}
+JOIN_DIMA_TEMPLATES = {
+    "มากที่สุด": [
+        "{dimA}ไหนมี{fact}มากที่สุดใน{thai}",
+        "{thai}{dimA}ไหนมี{fact}มากที่สุด",
+        "อยากรู้ว่า{dimA}ไหนของ{thai}มี{fact}มากที่สุด",
+    ],
+    "น้อยที่สุด": [
+        "{dimA}ไหนมี{fact}น้อยที่สุดใน{thai}",
+        "{thai}{dimA}ไหนมี{fact}น้อยที่สุด",
+        "อยากรู้ว่า{dimA}ไหนของ{thai}มี{fact}น้อยที่สุด",
+    ],
+}
+
+
 def gen_join(spec, rng):
+    direction = rng.choice(["มากที่สุด", "น้อยที่สุด"])
+    order = "DESC" if direction == "มากที่สุด" else "ASC"
+
     if spec.dim2 is not None:
         col, _vals = rng.choice(list(spec.dim2.cat_cols.items())) if spec.dim2.cat_cols else (spec.dim2.name_col, None)
-        question = f"{spec.dim2.thai}หมวดไหนของ{spec.thai}มียอดรวมมากที่สุด"
+        question = rng.choice(JOIN_DIM2_TEMPLATES[direction]).format(dim2=spec.dim2.thai, thai=spec.thai)
         # measure_join บางสคีมา (เช่น restaurant, warehouse) join ไปถึง dim2 อยู่แล้ว
         # เพื่อให้ measure_expr ใช้ได้ ถ้าเป็นแบบนั้นไม่ต้อง join dim2 ซ้ำ (ชื่อตารางชนกัน)
         extra_join = "" if spec.dim2.table in spec.measure_join else spec.dim2_join
         sql = (
             f"SELECT {spec.dim2.table}.{col}, SUM({spec.measure_expr}) AS total "
             f"FROM {spec.fact.table} {spec.measure_join} {extra_join} "
-            f"GROUP BY {spec.dim2.table}.{col} ORDER BY total DESC LIMIT 1"
+            f"GROUP BY {spec.dim2.table}.{col} ORDER BY total {order} LIMIT 1"
         )
         return question, sql.strip()
 
     # ไม่มี dim2: ใช้ join dimA-fact ธรรมดาแทน
-    question = f"{spec.dimA.thai}ไหนมี{spec.fact.thai}มากที่สุดใน{spec.thai}"
+    question = rng.choice(JOIN_DIMA_TEMPLATES[direction]).format(
+        dimA=spec.dimA.thai, fact=spec.fact.thai, thai=spec.thai
+    )
     sql = (
         f"SELECT {spec.dimA.table}.{spec.dimA.name_col}, COUNT(*) AS n "
         f"FROM {spec.fact.table} "
         f"JOIN {spec.dimA.table} ON {spec.dimA.table}.{spec.dimA.pk} = {spec.fact.table}.{spec.fact.fk_to_dimA} "
-        f"GROUP BY {spec.dimA.table}.{spec.dimA.name_col} ORDER BY n DESC LIMIT 1"
+        f"GROUP BY {spec.dimA.table}.{spec.dimA.name_col} ORDER BY n {order} LIMIT 1"
     )
     return question, sql
 

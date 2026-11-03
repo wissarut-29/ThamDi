@@ -18,7 +18,7 @@ import duckdb
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # ให้ import ml.* ได้เวลารันตรง ๆ
 
 from ml.templates.generators import GENERATORS
-from ml.templates.schemas import TRAIN_SCHEMAS, VAL_ONLY_SCHEMAS
+from ml.templates.schemas import TRAIN_SCHEMAS, VAL_ONLY_SCHEMAS, stable_seed
 
 SEED = 42
 TRAIN_PER_CELL = 200
@@ -70,7 +70,7 @@ def generate_split(schemas, per_cell, rng_seed, stats):
     rng = random.Random(rng_seed)
     records = []
     for spec in schemas:
-        con = _build_validation_db(spec, random.Random(rng_seed * 1000 + hash(spec.name) % 1000))
+        con = _build_validation_db(spec, random.Random(rng_seed * 1000 + stable_seed(spec.name) % 1000))
         for category in GENERATORS:
             records.extend(_generate_cell(spec, category, per_cell, rng, con, stats))
         con.close()
