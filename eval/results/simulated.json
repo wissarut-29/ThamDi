@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-03T04:56:33+07:00",
+  "generated_at": "2026-11-04T04:53:30+07:00",
   "simulated": true,
   "model": {
     "name": "mock",
@@ -40,6 +40,38 @@
       }
     },
     {
+      "mode": "M0",
+      "set": "val",
+      "n": 205,
+      "execution_accuracy": 0.3561,
+      "valid_sql_rate": 0.9122,
+      "by_category": {
+        "aggregate": 0.4333,
+        "filter": 0.2414,
+        "group": 0.5385,
+        "join": 0.4333,
+        "rank": 0.2333,
+        "refuse": 0.3333,
+        "thai_date": 0.3
+      }
+    },
+    {
+      "mode": "M0",
+      "set": "val_unseen",
+      "n": 33,
+      "execution_accuracy": 0.4242,
+      "valid_sql_rate": 0.8788,
+      "by_category": {
+        "aggregate": 0.6,
+        "filter": 0.5,
+        "group": 0.5,
+        "join": 0.4,
+        "rank": 0.2,
+        "refuse": 0.2,
+        "thai_date": 0.6
+      }
+    },
+    {
       "mode": "M1",
       "set": "handwritten",
       "n": 70,
@@ -69,6 +101,38 @@
         "rank": 0.6,
         "refuse": 0.4,
         "thai_date": 0.4
+      }
+    },
+    {
+      "mode": "M1",
+      "set": "val",
+      "n": 205,
+      "execution_accuracy": 0.439,
+      "valid_sql_rate": 0.8829,
+      "by_category": {
+        "aggregate": 0.4333,
+        "filter": 0.3448,
+        "group": 0.3846,
+        "join": 0.5333,
+        "rank": 0.4333,
+        "refuse": 0.5667,
+        "thai_date": 0.3667
+      }
+    },
+    {
+      "mode": "M1",
+      "set": "val_unseen",
+      "n": 33,
+      "execution_accuracy": 0.4848,
+      "valid_sql_rate": 0.8788,
+      "by_category": {
+        "aggregate": 0.2,
+        "filter": 0.5,
+        "group": 0.5,
+        "join": 0.4,
+        "rank": 0.8,
+        "refuse": 0.4,
+        "thai_date": 0.6
       }
     },
     {
@@ -104,6 +168,38 @@
       }
     },
     {
+      "mode": "M2",
+      "set": "val",
+      "n": 205,
+      "execution_accuracy": 0.6,
+      "valid_sql_rate": 0.8683,
+      "by_category": {
+        "aggregate": 0.7667,
+        "filter": 0.5172,
+        "group": 0.5385,
+        "join": 0.7,
+        "rank": 0.6333,
+        "refuse": 0.5333,
+        "thai_date": 0.5
+      }
+    },
+    {
+      "mode": "M2",
+      "set": "val_unseen",
+      "n": 33,
+      "execution_accuracy": 0.7273,
+      "valid_sql_rate": 0.8788,
+      "by_category": {
+        "aggregate": 0.8,
+        "filter": 0.75,
+        "group": 0.75,
+        "join": 0.8,
+        "rank": 0.8,
+        "refuse": 0.8,
+        "thai_date": 0.4
+      }
+    },
+    {
       "mode": "M3",
       "set": "handwritten",
       "n": 70,
@@ -133,6 +229,38 @@
         "rank": 0.8,
         "refuse": 0.8,
         "thai_date": 0.4
+      }
+    },
+    {
+      "mode": "M3",
+      "set": "val",
+      "n": 205,
+      "execution_accuracy": 0.7073,
+      "valid_sql_rate": 0.9122,
+      "by_category": {
+        "aggregate": 0.7333,
+        "filter": 0.7241,
+        "group": 0.6923,
+        "join": 0.6333,
+        "rank": 0.6333,
+        "refuse": 0.7333,
+        "thai_date": 0.8
+      }
+    },
+    {
+      "mode": "M3",
+      "set": "val_unseen",
+      "n": 33,
+      "execution_accuracy": 0.6667,
+      "valid_sql_rate": 0.9697,
+      "by_category": {
+        "aggregate": 0.6,
+        "filter": 1.0,
+        "group": 0.25,
+        "join": 0.8,
+        "rank": 0.6,
+        "refuse": 0.8,
+        "thai_date": 0.6
       }
     }
   ]
