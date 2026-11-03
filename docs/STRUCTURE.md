@@ -50,7 +50,7 @@ ThamDi/
 │   ├── ISSUES.md                  ปัญหา/ต้นเหตุ/วิธีแก้ ✓                 Chalakorn
 │   ├── RUNBOOK.md                                                        Wissarut
 │   └── DEMO_SCRIPT.md                                                    Wissarut
-├── .github/                       CODEOWNERS + CI (ยังไม่มี: งาน 1.5)    Wissarut
+├── .github/                       CODEOWNERS + CI (ยังไม่มี: งาน 1.5)    Suphakorn
 ├── Makefile, docker-compose.yml   (ยังไม่มี)                             Suphakorn
 ├── .env.example                   ตัวอย่างค่าตั้ง                        Suphakorn
 ├── .gitattributes                 บังคับ eol=lf ให้ scripts/hooks/* ✓     Chalakorn

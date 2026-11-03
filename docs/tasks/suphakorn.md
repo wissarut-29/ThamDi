@@ -2,15 +2,13 @@
 
 GitHub: @SoSick41 · branch: `feat/suphakorn` · ที่มา: [docs/TASKS.md](../TASKS.md) (ถ้าข้อมูลไม่ตรงกัน ให้ยึด TASKS.md)
 
-**ดูแลไฟล์:** `apps/web/`, `agent/model.py`, `answer.py`, `routers/` (ยกเว้น `eval.py`), `main.py`, `db.py`, `security.py`, `ingest.py`, Docker, `Makefile` — ตำแหน่งไฟล์จริงดูใน [STRUCTURE.md](../STRUCTURE.md)
-
-> **🔄 ปรับแบ่งงาน 3 พ.ย. บ่าย** (รายละเอียดใน [TASKS.md](../TASKS.md#-ปรับแบ่งงาน-3-พย-บ่าย)): 1.5 (CI + CODEOWNERS) และ S2 เวอร์ชันปลอม ย้ายไปให้ Wissarut · S2 เวอร์ชันจริงยังเป็นของ Suphakorn โดย Chalakorn ช่วย · ทำ 1.7 (สร้าง `feat/suphakorn`) ก่อน แล้วไปที่ S3 ได้เลย
+**ดูแลไฟล์:** `apps/web/`, `agent/model.py`, `answer.py`, `routers/` (ยกเว้น `eval.py`), `main.py`, `db.py`, `security.py`, `ingest.py`, Docker, `Makefile`, `.github/` — ตำแหน่งไฟล์จริงดูใน [STRUCTURE.md](../STRUCTURE.md)
 
 ## ขั้น 1 — ตั้งค่า repo (3 พ.ย. เช้า)
 
 | เลข | งาน | เสร็จเมื่อ |
 |---|---|---|
-| ~~1.5~~ | ~~PR: `.github/CODEOWNERS` 3 คน · CI 4 job~~ — **ย้ายไปให้ Wissarut** | — |
+| 1.5 | PR: `.github/CODEOWNERS` 3 คน · CI 4 job: `api`, `eval-gold`, `web`, `no-ai-watermark` | CI เขียว |
 | 1.7 | clone → สร้าง branch ของตัวเอง `git switch -c feat/suphakorn && git push -u origin feat/suphakorn` → `git config core.hooksPath scripts/hooks` → ปิด attribution ของเครื่องมือที่ใช้ → `make data && make test` | เทสต์ผ่านบนเครื่องตัวเอง |
 
 - CODEOWNERS ให้ตรงกับเจ้าของใน [STRUCTURE.md](../STRUCTURE.md)
@@ -23,19 +21,19 @@ GitHub: @SoSick41 · branch: `feat/suphakorn` · ที่มา: [docs/TASKS.md
 | เลข | งาน | เมื่อ | เสร็จเมื่อ |
 |---|---|---|---|
 | S1 | `config.py` อ่านค่าจาก `.env` · `.env.example` ใช้ `MODEL_PATH`, `MODEL_BACKEND` ไม่มี `GROQ_*`/`GEMINI_*` (ไฟล์ร่วม → ให้ Chalakorn review) | 3 พ.ย. | ไม่มีค่าตั้งของ API ภายนอก |
-| **S2** | `model.py`: `generate_sql()` / `model_info()` — เวอร์ชันปลอม Wissarut ทำให้แล้ว · **Suphakorn โหลดโมเดลจริง** โดย Chalakorn ช่วย (โหลดครั้งเดียว, beam n, คิว 1–2 งาน, โหลดไม่ขึ้น API ยังเริ่มได้) | จริง: 3 พ.ย. ค่ำ | ถามผ่านเว็บได้คำตอบจากโมเดล v1 |
+| **S2** | `model.py`: `generate_sql()` / `model_info()` — **เวอร์ชันปลอมก่อน (ส่งให้ Chalakorn ทันที)** แล้วโหลดโมเดลจริง (โหลดครั้งเดียว, beam n, คิว 1–2 งาน, โหลดไม่ขึ้น API ยังเริ่มได้) | ปลอม: 3 พ.ย. เช้า · จริง: 3 พ.ย. ค่ำ | ถามผ่านเว็บได้คำตอบจากโมเดล v1 |
 | S3 | `answer.py` แม่แบบคำตอบไทย · `/api/chat` + auth + ตรวจเจ้าของ dataset + บันทึกประวัติ | 3 พ.ย. | เทสต์ 401 / ผู้ใช้อื่นเปิดไม่ได้ ผ่าน |
 | S4 | ความทนทานของเว็บ (repo ใหม่ ทำให้ถูกตั้งแต่แรก): หน้าไม่ค้างเมื่อ API ล่ม/ช้า (`AppShell`) · ใช้ `next` เวอร์ชันที่ไม่มีช่องโหว่ · ข้อความรหัสเดโมไม่ฮาร์ดโค้ด · `smoke.sh` ส่ง token · `CORS_ORIGINS` ว่างต้องไม่ผ่าน | 3–4 พ.ย. | `npm audit` สะอาด · ปิด API แล้วหน้าเว็บบอกให้ลองใหม่ |
 | S5 | หน้า "เกี่ยวกับโมเดล" + หน้าผลการทดสอบ (จาก `GET /api/model`, `GET /api/eval/results` ของ Wissarut) · สถานะรอคำตอบชัดเจน | 4 พ.ย. | แสดงผลจริง |
 | S6 | **เครื่องเดโม:** `make model && docker compose up` บนโน้ตบุ๊กวันสอบ · วัด RAM/เวลาตอบ · ตั้ง `JWT_SECRET`, `DEMO_PASSWORD` ใหม่ · ลองตัดเน็ต | 4 พ.ย. | เปิดเครื่องใหม่แล้วใช้ได้ครบเส้นใน 5 นาที |
 
-**เริ่มได้ทันที:** S3 (`answer.py`, `main.py`, `/api/chat`) — ข้อตกลงอยู่ใน [CONTRACT.md](../CONTRACT.md) · `pipeline.run()` ของ Chalakorn พร้อมแล้ว รอแค่ `get_dataset()` จากฝั่งระบบ (ดู [ISSUES.md](../ISSUES.md) ข้อ 5)
+**เริ่มได้ทันที:** S2 เวอร์ชันปลอม — signature อยู่ใน `services/api/app/agent/model.py` แล้ว ข้อตกลงอยู่ใน [CONTRACT.md](../CONTRACT.md) หัวข้อ 1 และ 4
 
 ## จุดส่งของ
 
 | เวลา | ทิศทาง | อะไร |
 |---|---|---|
-| 3 พ.ย. 17:00 | ⬅️ รับจาก Wissarut | `model.py` ปลอม (S2) |
+| 3 พ.ย. 11:00 | ➡️ ส่งให้ Chalakorn | `model.py` ปลอม (S2) |
 | 3 พ.ย. 18:00 | ⬅️ รับจาก Chalakorn | โมเดล v1 |
 | 3 พ.ย. 21:00 | ➡️ `dev` | ระบบทำงานครบเส้นด้วยโมเดล v1 ✅ |
 | 4 พ.ย. 12:00 | ⬅️ รับจาก Chalakorn | 🧊 โมเดลสุดท้าย |
@@ -46,8 +44,8 @@ GitHub: @SoSick41 · branch: `feat/suphakorn` · ที่มา: [docs/TASKS.md
 
 | เวลา | ทำอะไร |
 |---|---|
-| 3 พ.ย. เช้า | ~~1.5 · S2 (ปลอม)~~ ย้ายไปให้ Wissarut |
-| 3 พ.ย. บ่าย | 1.7 · S1 · S3 · S4 |
+| 3 พ.ย. เช้า | 1.5 · S2 (ปลอม) |
+| 3 พ.ย. บ่าย | S1 · S3 · S4 |
 | 3 พ.ย. ค่ำ | S2 (จริง) · ต่อโมเดล v1 |
 | 4 พ.ย. เช้า | S4 · S5 · S6 |
 | 4 พ.ย. บ่าย | S5 · S6 · แก้บั๊กจาก W4 |
