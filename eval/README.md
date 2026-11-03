@@ -7,13 +7,14 @@
 | ไฟล์ | คืออะไร |
 |---|---|
 | `sets/handwritten.jsonl` | ชุดทดสอบเขียนด้วยมือ 70 ข้อ 7 หมวด หมวดละ 10 · 35 ข้อบน schema ที่โมเดลไม่เคยเห็น |
-| `sets/val.jsonl` | ชุด val จาก Chalakorn (ยังไม่มี) |
+| `sets/val.jsonl` | ชุด val 210 ข้อ จาก `ml/export_val.py` ของ Chalakorn (PR #12) |
 | `schemas/*.sql` | ฐานข้อมูลทดสอบ (DDL + ข้อมูลตัวอย่าง) — ดู [schemas/README.md](schemas/README.md) |
 | `run.py` | รัน eval ทุกโหมด (M0–M3) × ทุกชุด |
 | `report.py` | สร้างตาราง Markdown + กราฟจากผล |
 | `results/latest*.{json,md,png}` | ผลจริง (ยังไม่มี — รอโมเดล) |
 | `results/simulated*.{json,md,png}` | ผลจำลองจาก `--predictor mock` ไว้ทดสอบ eval และหน้าเว็บ — **ห้ามใช้ใน README/สไลด์** |
 | `results/failures.md` | วิเคราะห์ข้อผิด 3–5 ตัวอย่าง (W5) |
+| `results/w4_user_test.md` | ผลทดสอบแบบผู้ใช้ (W4) · สคริปต์ `user_test.py` |
 | `demo_answers.json` | คำตอบเดโมสำหรับ DEMO_MODE — Chalakorn เติม (C5) |
 
 ## วิธีใช้
