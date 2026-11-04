@@ -33,11 +33,12 @@
   - seed=42
 
 ## ไฟล์โมเดล
-- **v2 (ปัจจุบัน):** อยู่ที่ `models/thamdi/` ในเครื่อง Chalakorn เท่านั้น ยังไม่มีลิงก์แชร์
-  (เทรนบน Kaggle แล้วดาวน์โหลดมาวางตรงนี้ — ต้องคุยกันว่าจะแชร์ไฟล์ขนาด ~950MB นี้ให้ Suphakorn
-  ยังไงดี เช่น อัปโหลดกลับขึ้น Google Drive เป็นไฟล์ zip เดี่ยว ไม่ใช่โฟลเดอร์ เพื่อให้ `curl -fL`
-  ใน `scripts/tasks.sh` ดาวน์โหลดตรงได้ — ปัญหาเดิมเรื่องลิงก์โฟลเดอร์ใช้กับ `make model` ไม่ได้
-  ตามที่ Wissarut เจอใน PR #12)
+- **v2 (ปัจจุบัน):** `MODEL_URL=https://drive.usercontent.google.com/download?id=1dWj_CjDFrqR7gyUbAzJqPYrkkcQdvXYv&export=download&confirm=t`
+  (ไฟล์ zip เดี่ยว ~728MB บน Google Drive แชร์แบบ "ทุกคนที่มีลิงก์") ใช้รูปแบบ URL นี้ ไม่ใช่ลิงก์
+  `/file/d/.../view` ตรง ๆ — ไฟล์ขนาดนี้ Google Drive เสิร์ฟหน้าเตือน "ไวรัสสแกนไม่ได้" (HTML ~2.4KB)
+  แทนไฟล์จริงถ้าใช้ `curl -fL` กับลิงก์ view ตรง ๆ (ต้องมี `&confirm=t` ถึงจะได้ไฟล์จริง) ทดสอบดาวน์โหลด
+  เต็มไฟล์ด้วย `curl -fL --retry 3` ตัวเดียวกับที่ `scripts/tasks.sh` ใช้แล้ว ได้ 763,595,638 ไบต์
+  ตรงกับไฟล์ต้นฉบับทุกไบต์ และ `unzip -t` ผ่านทั้ง 6 ไฟล์ข้างในไม่มี error
 - v1 (รอบแรก): เก็บสำรองไว้ที่ `models/thamdi_v1_backup/` ในเครื่องเดียวกัน ลิงก์เดิม
   https://drive.google.com/drive/folders/1oaQs9n2w3hh98_xpOImLDimZWRKIkKg-?usp=drive_link
   (ยังมีปัญหาลิงก์โฟลเดอร์แบบเดียวกัน ไม่ได้แก้)
