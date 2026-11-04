@@ -68,7 +68,8 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 - เปลี่ยนคำถามเดโมข้อ 2, 4, 5, 6 → ถูก 7/7 · merge #30 แล้ว
 - รีวิว #27 รอบ 5: `demo_answers.json` ยังเป็นชุดเก่า · ISSUES ข้อ 14 (1/7) ไม่ตรงกับผลของทีม · ISSUES ข้อ 8 · TODO เวลาเทรนใน `MODEL_CARD.md`
 - รีวิว #29 รอบ 3: Suphakorn แก้ครบแล้ว (`c41d3ad` · 7/7 ครบเส้น 23 วินาที) · เหลือซ้อมบนโน้ตบุ๊กวันสอบ
-- เหลือ: merge #29 · merge #27 หลังแก้ → W5 → ส่ง `latest.json` ให้ S5 · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป · `dev` → `main` + tag `v1.0`
+- merge #29 แล้ว
+- เหลือ: merge #27 หลังแก้ → W5 → ส่ง `latest.json` ให้ S5 · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป · `dev` → `main` + tag `v1.0`
 
 ## จุดส่งของ
 
