@@ -29,7 +29,7 @@
 - **แก้อย่างไร:** เช็กว่าชื่อตาราง dim2 อยู่ใน measure_join แล้วหรือยัง ก่อน join ซ้ำ
 - **ก่อน → หลัง:** หมวด join ตก 400-600 ข้อจาก 1000 (รันไม่ผ่าน DuckDB) → ตก 0 ข้อ
 
-## 4. agent/model.py ของ Suphakorn ยังเป็น NotImplementedError จริง (ไม่ใช่ปลอม)
+## 4. agent/model.py ของ Suphakorn ยังเป็น NotImplementedError จริง (ไม่ใช่ปลอม) — ✅ แก้แล้ว (PR #9 merge 4 พ.ย.)
 
 - **ปัญหา:** `python eval/run.py --predictor pipeline --modes M0 M3` รันไม่จบ เพราะ `generate_sql()` raise
   NotImplementedError จริง ไม่ใช่เวอร์ชันปลอมที่ CONTRACT.md ระบุว่าควรมีตั้งแต่ 3 พ.ย. 11:00
@@ -39,22 +39,18 @@
 - **ก่อน → หลัง:** ยืนยันไม่ได้ว่า pipeline ต่อกับ eval ได้จริงจนกว่ามี model.py ปลอม → ยืนยันแล้วว่าต่อกันได้
   (รอแค่ของจริงมาแทน stub)
 
-## 5. ยังไม่มีฟังก์ชันเปิด dataset ใน docs/CONTRACT.md
+## 5. ยังไม่มีฟังก์ชันเปิด dataset ใน docs/CONTRACT.md — ✅ แก้แล้ว (PR #9 merge 4 พ.ย.)
 
 - **ปัญหา:** `pipeline.run(question, dataset_id, mode)` ต้องได้ schema DDL + การเชื่อมต่อฐานข้อมูลของ
   dataset นั้นจากฝั่งระบบ แต่ CONTRACT.md ยังไม่นิยามฟังก์ชันนี้
 - **ต้นเหตุ:** ยังไม่มีการตกลงรูปแบบฟังก์ชันระหว่าง Chalakorn กับ Suphakorn
-- **แก้อย่างไร:** ทำ stub ไว้ใน `services/api/app/agent/pipeline.py` ก่อน (เทสต์ monkeypatch แทน):
-
-  ```python
-  def get_dataset(dataset_id: str) -> tuple[str, duckdb.DuckDBPyConnection]:
-      """เปิด dataset แบบ read-only คืน (schema_ddl, duckdb_connection)"""
-  ```
-
-  ข้อเสนอรูปแบบฟังก์ชันนี้ยังไม่ได้เพิ่มลง `docs/CONTRACT.md` อย่างเป็นทางการ (Suphakorn ต้อง
-  review/เพิ่มเองในไฟล์นั้น) — ตอนนี้ `pipeline.py` เรียก `get_dataset()` แล้ว raise NotImplementedError
-- **ก่อน → หลัง:** `run()` เขียนไม่ได้เลยเพราะไม่รู้จะเปิด dataset ยังไง → เขียน+เทสต์ได้ครบ รอแค่เสียบ
-  ฟังก์ชันจริงจาก Suphakorn
+- **แก้อย่างไร:** ทำ stub ไว้ใน `services/api/app/agent/pipeline.py` ก่อน (เทสต์ monkeypatch แทน) —
+  Suphakorn เพิ่ม `db.open_dataset(dataset_id) -> tuple[str, duckdb.DuckDBPyConnection]` ตรงตามที่
+  เสนอไว้ลง `docs/CONTRACT.md` หัวข้อ 2 ใน PR #9 แล้ว พอ merge แล้วแก้ `pipeline.get_dataset()`
+  ให้เรียก `db.open_dataset()` ตรง ๆ แทน stub (ลบ `NotImplementedError` ออก)
+- **ก่อน → หลัง:** `run()` เขียนไม่ได้เลยเพราะไม่รู้จะเปิด dataset ยังไง → ต่อกับของจริงแล้ว ทดสอบ
+  `eval/run.py --predictor pipeline --modes M0 M3` กับ `MODEL_BACKEND=fake` จริงรันจบสำเร็จทั้งเส้น
+  (ก่อนหน้านี้พิสูจน์ได้แค่ด้วย monkeypatch ชั่วคราว) `pytest` ทั้งโฟลเดอร์ 131 ข้อผ่าน
 
 ## 6. sql_guard อ้างตารางนอก dataset ได้ ถ้าตั้งชื่อ CTE ซ้ำกับตารางจริง (พบจากรีวิวของ Wissarut)
 
@@ -76,3 +72,20 @@
 - **CI job `no-ai-watermark` (งาน 1.5) ต้องยกเว้น `scripts/hooks/*`:** ไฟล์ hook เองมีแพตเทิร์นลายน้ำอยู่ใน
   ข้อความ (เพราะต้องรู้จักคำพวกนั้นถึงจะตรวจได้) เหมือนที่ `pre-commit` ยกเว้นตัวเองไว้แล้ว ถ้า CI ไม่ยกเว้น
   จะ fail เข้าใจผิดว่ามีลายน้ำ
+
+## 8. โมเดล v1 ตอบคำถามเดโมถูกแค่ 2/7 ข้อ (เจอตอนรันจริงกับ MODEL_BACKEND=local ครั้งแรก)
+
+- **ปัญหา:** รันคำถามเดโมทั้ง 7 ข้อจาก `docs/DEMO_SCRIPT.md` ผ่าน `pipeline.run()` จริงด้วยโมเดลที่เทรนได้
+  (M3) เทียบกับคำตอบที่คาดหวัง: ถูก 2 ข้อ (ข้อ 1 ยอดขายรวม, ข้อ 7 ปฏิเสธคำสั่งลบ) ข้อ 2 ไม่มี beam ไหน
+  ผ่าน guard เลย (status=error) ข้อ 3, 4, 6 เลือกคอลัมน์/ตัวกรองผิด (เช่น ข้อ 6 "กาแฟเย็น...เชียงใหม่"
+  โมเดลลืมกรอง `product = 'กาแฟเย็น'` กรองแค่ `branch` อย่างเดียว) ข้อ 5 ใช้ `COUNT(*)` แทน
+  `SUM(quantity)` (นับจำนวนแถว ไม่ใช่นับจำนวนชิ้นที่ขาย)
+- **ต้นเหตุที่น่าจะเป็นไปได้ (สังเกตจากรูปแบบ error ไม่ได้เปิดดูชุดทดสอบ):** `ml/templates/generators.py`
+  `gen_filter` สร้างคำถามกรองด้วยเงื่อนไขเดียวเท่านั้น (`_pick_cat` เลือกคอลัมน์เดียว) ไม่มีตัวอย่างกรอง
+  2 เงื่อนไขพร้อมกันเลยในข้อมูลเทรนทั้งหมด (เช่น "สินค้า X ที่สาขา Y") ซึ่งตรงกับที่ข้อ 4 และ 6 ของเดโม
+  ต้องการเป๊ะ — เป็นจุดที่ควรเพิ่มในรอบ C4
+- **แก้อย่างไร:** `eval/demo_answers.json` เก็บไว้แค่ 2 ข้อที่ถูกจริง (ข้อ 1, 7) ข้อที่เหลือไม่ใส่ไว้ —
+  ปล่อยให้ตกไปที่ข้อความขอโทษของ `routers/chat.py` (`NOT_READY_TEXT`) ตอน DEMO_MODE ดีกว่าตอบมั่นใจ
+  แต่ผิด ต้องแจ้ง Wissarut ให้เลือกว่าจะเปลี่ยนคำถามเดโมหรือตัดข้อที่เหลือออก (ตามที่เขาเสนอไว้ในสเปก C5)
+- **ก่อน → หลัง:** `eval/demo_answers.json` มีคำตอบผิดทั้ง 5 ข้อ (เสี่ยงต่อหน้ากรรมการ) → เหลือแค่ 2 ข้อที่
+  ยืนยันถูกจริง รอ Wissarut ตัดสินใจเรื่องคำถามที่เหลือ

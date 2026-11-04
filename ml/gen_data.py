@@ -22,6 +22,11 @@ from ml.templates.schemas import TRAIN_SCHEMAS, VAL_ONLY_SCHEMAS, stable_seed
 
 SEED = 42
 TRAIN_PER_CELL = 200
+# หมวดที่ val บอกว่าอ่อน (รอบ C4 — ดู docs/ISSUES.md): เพิ่มจำนวนตัวอย่างให้มากกว่าปรกติ
+# เพื่อให้โมเดลเห็นรูปแบบ SQL ของหมวดนี้บ่อยขึ้น (group/join มี template คำศัพท์จำกัดอยู่แล้ว
+# เพิ่มความหลากหลายไปสุดแล้ว ส่วน rank เป็น task ที่ยากกว่าปรกติ — ต้องทำ GROUP BY+JOIN+ORDER
+# BY+LIMIT ให้ถูกในครั้งเดียว)
+TRAIN_PER_CELL_OVERRIDE = {"group": 350, "join": 350, "rank": 350}
 VAL_PER_CELL_TRAIN_SCHEMAS = 30
 VAL_PER_CELL_HELD_OUT = 60
 
@@ -66,13 +71,15 @@ def _generate_cell(spec, category, count, rng, con, stats):
     return records
 
 
-def generate_split(schemas, per_cell, rng_seed, stats):
+def generate_split(schemas, per_cell, rng_seed, stats, per_category_override=None):
+    per_category_override = per_category_override or {}
     rng = random.Random(rng_seed)
     records = []
     for spec in schemas:
         con = _build_validation_db(spec, random.Random(rng_seed * 1000 + stable_seed(spec.name) % 1000))
         for category in GENERATORS:
-            records.extend(_generate_cell(spec, category, per_cell, rng, con, stats))
+            count = per_category_override.get(category, per_cell)
+            records.extend(_generate_cell(spec, category, count, rng, con, stats))
         con.close()
     return records
 
@@ -82,7 +89,7 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     stats = {"sql_error": 0}
 
-    train_records = generate_split(TRAIN_SCHEMAS, TRAIN_PER_CELL, SEED, stats)
+    train_records = generate_split(TRAIN_SCHEMAS, TRAIN_PER_CELL, SEED, stats, TRAIN_PER_CELL_OVERRIDE)
     val_from_train = generate_split(TRAIN_SCHEMAS, VAL_PER_CELL_TRAIN_SCHEMAS, SEED + 1, stats)
     val_held_out = generate_split(VAL_ONLY_SCHEMAS, VAL_PER_CELL_HELD_OUT, SEED + 2, stats)
     val_records = val_from_train + val_held_out
