@@ -14,6 +14,11 @@ def test_single_value_formatted():
     assert answer.render("q", ok(["n"], [[Decimal("10.5")]])) == "คำตอบ: 10.50"
 
 
+def test_single_null_value_means_no_data():
+    # เจอตอนทดสอบโมเดลจริง: SUM ของเดือนที่ไม่มีข้อมูลได้ [[None]] แล้วเคยตอบ "คำตอบ: -"
+    assert answer.render("q", ok(["sum"], [[None]])) == answer.EMPTY_TEXT
+
+
 def test_single_row_many_columns():
     text = answer.render("q", ok(["branch", "day"], [["สาขา 1", date(2026, 11, 3)]]))
     assert text == "คำตอบ: branch = สาขา 1, day = 2026-11-03"

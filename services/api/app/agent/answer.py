@@ -49,6 +49,9 @@ def render(question: str, result: PipelineResult) -> str:
         return EMPTY_TEXT
 
     if len(rows) == 1 and len(columns) == 1:
+        # SUM/AVG ของช่วงที่ไม่มีข้อมูลได้ NULL แถวเดียว → บอกว่าไม่พบ ดีกว่าขึ้น "คำตอบ: -"
+        if rows[0][0] is None:
+            return EMPTY_TEXT
         return f"คำตอบ: {format_value(rows[0][0])}"
 
     if len(rows) == 1:
