@@ -11,15 +11,16 @@
 | หน้าที่พิเศษ | — | — | **เจ้าของ repo** (ตั้งค่า, สิทธิ์, branch protection) |
 | ดูแล | `ml/`, `agent/pipeline.py`, `preprocess.py`, `demo.py`, `sql_guard.py`, `thai_dates.py`, `tools.py`, `scripts/gen_sales_db.py`, `docs/MODEL_CARD.md` | `apps/web/`, `agent/model.py`, `answer.py`, `routers/` (ยกเว้น eval), `main.py`, `db.py`, `security.py`, `ingest.py`, Docker, `Makefile`, `.github/` | `eval/`, `routers/eval.py`, `README.md`, `docs/RUNBOOK.md`, `docs/DEMO_SCRIPT.md`, สไลด์ |
 
-## 📌 สถานะ ณ 4 พ.ย. 20:40
+## 📌 สถานะ ณ 5 พ.ย.
 
-> ⚠️ **ขวางทุกคน:** zip โมเดล v2 ใน PR #27 เป็นโมเดลตั้งต้น (Qwen2.5-0.5B-Instruct) ไม่มีผลการเทรน น้ำหนักตรงกับต้นฉบับทุกค่า คำถามเดโมได้ `error` ทั้ง 7 ข้อ · รอ Chalakorn เช็ก log/โฟลเดอร์ที่ zip แล้วอัปใหม่ · **ทีมใช้ v2 อย่างเดียว ไม่ถอยไปใช้ v1** (W5, C5, S6 ใช้ v2 ตัวเดียวกัน)
+> ✅ **โมเดล v2 เทรนจริงแล้ว** (ลิงก์ใหม่ใน PR #27 · Wissarut โหลดมาเช็กแล้ว tensor ต่างจากโมเดลตั้งต้นจริง) · ทีมใช้ v2 ตัวนี้ตัวเดียว (W5, C5, S6)
+> 🔁 **เปลี่ยนคำถามเดโมแล้ว** ชุดเดิม v2 ถูกแค่ 3/7 · ชุดใหม่ใน [DEMO_SCRIPT.md](DEMO_SCRIPT.md) ทดสอบกับ v2 แล้วถูกครบ 7/7 · **พิมพ์คำถามให้ตรงตัวอักษร**
 
 | ใคร | เสร็จแล้ว | ยังเหลือ |
 |---|---|---|
-| Chalakorn | C1 · C2 โมเดล v1 · C3 · C5 โครงสร้าง + คำตอบเดโม 2 ข้อ (#18) · `get_dataset()` จริง (#18) · ปรับข้อมูลเทรนจากข้อผิดของ val · C4 เทรนโมเดล v2 แล้ว · C6 `MODEL_CARD.md` ครบ (#24) | **อัป zip โมเดลที่เทรนแล้วใหม่** (zip v2 ปัจจุบันเป็นโมเดลตั้งต้น) · **PR #27** รอแก้อีก 2 ข้อ: ใส่เครื่องหมายคำพูดครอบ `MODEL_URL` · แปลง "ปี 2568" ที่ไม่มีชื่อเดือน (ขวาง W5, S6) · C5 รันคำถามเดโม 7 ข้อซ้ำกับ v2 |
-| Suphakorn | S1–S4 · ลบตัวเสียบ `get_dataset` · ทดสอบโมเดล v1 จริง + ผลวัดใน RUNBOOK (#19) · ชื่อไทย `val_unseen` บนเว็บ · รับ .xls .ods .tsv .txt .json (#22) | S5 แสดง `latest.json` จริง (รอ W5) · S6 เครื่องเดโม (ลิงก์ v2 อยู่ใน PR #27 · Windows ถ้า `curl` ขึ้น `CRYPT_E_REVOCATION_OFFLINE` ให้เติม `--ssl-no-revoke`) |
-| Wissarut | 1.1–1.8 · W1–W4 · W6 README/RUNBOOK/DEMO_SCRIPT · `dev` → `main` (#20) · ลองติดตั้งจาก clone ใหม่ · รีวิว/merge #22–#25 · รีวิว #27 · อัปเดต issue #10, #14 | W5 eval รอบสุดท้าย (รอ #27 merge) · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป (หน้า 10 ใส่ "ยังไม่รับ PDF, Word, รูปภาพ") · ตัดสินใจคำถามเดโม (รอ C5 รอบใหม่) · tag `v1.0` หลัง freeze |
+| Chalakorn | C1 · C2 โมเดล v1 · C3 · C5 โครงสร้าง + คำตอบเดโม 2 ข้อ (#18) · `get_dataset()` จริง (#18) · ปรับข้อมูลเทรนจากข้อผิดของ val · C4 เทรนโมเดล v2 แล้ว · C6 `MODEL_CARD.md` ครบ (#24) · C4 v2 รอบ 2 เทรนจริง + แก้ `tokenizer_config.json` (#27) | **PR #27:** อัปเดตจาก `dev` · เติมเวลาเทรน/GPU ใน `MODEL_CARD.md` · C5 `eval/demo_answers.json` ใส่คำตอบชุดคำถามเดโมใหม่ 7 ข้อตาม DEMO_SCRIPT |
+| Suphakorn | S1–S4 · ลบตัวเสียบ `get_dataset` · ทดสอบโมเดล v1 จริง + ผลวัดใน RUNBOOK (#19) · ชื่อไทย `val_unseen` บนเว็บ · รับ .xls .ods .tsv .txt .json (#22) | S5 แสดง `latest.json` จริง (รอ W5) · **PR #29:** อัปเดตจาก `dev` · ซ้อม S6 ซ้ำด้วย v2 (ลิงก์ใน `MODEL_CARD.md` ของ #27) ด้วยคำถามเดโมชุดใหม่ · ระบุเครื่องเดโม |
+| Wissarut | 1.1–1.8 · W1–W4 · W6 README/RUNBOOK/DEMO_SCRIPT · `dev` → `main` (#20) · ลองติดตั้งจาก clone ใหม่ · รีวิว/merge #22–#25 · รีวิว #27 · อัปเดต issue #10, #14 · merge #28 · เช็กโมเดล v2 รอบ 2 · เปลี่ยนคำถามเดโม (W6) | W5 eval รอบสุดท้าย (รอ #27 merge) · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป (หน้า 10 ใส่ "ยังไม่รับ PDF, Word, รูปภาพ") · tag `v1.0` หลัง freeze |
 
 ---
 
