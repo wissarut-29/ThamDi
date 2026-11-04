@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 
 import duckdb
 
+from .. import db
 from .model import generate_sql
 from .preprocess import build_pipeline_prompt
 from .sql_guard import SqlGuardError, check_sql
@@ -36,10 +37,11 @@ class PipelineResult:
 def get_dataset(dataset_id: str) -> tuple[str, duckdb.DuckDBPyConnection]:
     """เปิด dataset แบบ read-only คืน (schema_ddl, duckdb_connection)
 
-    สัญญานี้ยังไม่มีใน docs/CONTRACT.md — ต้องให้ Suphakorn เพิ่ม (ดูข้อความที่ร่างไว้ใน
-    docs/ISSUES.md) ตอนนี้เป็น stub ไว้ให้เทสต์ monkeypatch แทนได้
+    เรียก db.open_dataset() ตรง ๆ (docs/CONTRACT.md หัวข้อ 2 — เพิ่มโดย Suphakorn ใน PR #9)
+    ไม่มี dataset นั้น หรือ id ไม่ปลอดภัย → KeyError ส่งต่อขึ้นไปตรง ๆ ไม่ดักที่นี่ (ให้ router
+    เป็นคนแปลงเป็น 404 ตามที่ตกลงกันไว้ใน CONTRACT)
     """
-    raise NotImplementedError("C3: รอฟังก์ชันเปิด dataset แบบ read-only จากฝั่งระบบ")
+    return db.open_dataset(dataset_id)
 
 
 def _select_beam(

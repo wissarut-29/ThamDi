@@ -29,7 +29,7 @@
 - **แก้อย่างไร:** เช็กว่าชื่อตาราง dim2 อยู่ใน measure_join แล้วหรือยัง ก่อน join ซ้ำ
 - **ก่อน → หลัง:** หมวด join ตก 400-600 ข้อจาก 1000 (รันไม่ผ่าน DuckDB) → ตก 0 ข้อ
 
-## 4. agent/model.py ของ Suphakorn ยังเป็น NotImplementedError จริง (ไม่ใช่ปลอม)
+## 4. agent/model.py ของ Suphakorn ยังเป็น NotImplementedError จริง (ไม่ใช่ปลอม) — ✅ แก้แล้ว (PR #9 merge 4 พ.ย.)
 
 - **ปัญหา:** `python eval/run.py --predictor pipeline --modes M0 M3` รันไม่จบ เพราะ `generate_sql()` raise
   NotImplementedError จริง ไม่ใช่เวอร์ชันปลอมที่ CONTRACT.md ระบุว่าควรมีตั้งแต่ 3 พ.ย. 11:00
@@ -39,22 +39,18 @@
 - **ก่อน → หลัง:** ยืนยันไม่ได้ว่า pipeline ต่อกับ eval ได้จริงจนกว่ามี model.py ปลอม → ยืนยันแล้วว่าต่อกันได้
   (รอแค่ของจริงมาแทน stub)
 
-## 5. ยังไม่มีฟังก์ชันเปิด dataset ใน docs/CONTRACT.md
+## 5. ยังไม่มีฟังก์ชันเปิด dataset ใน docs/CONTRACT.md — ✅ แก้แล้ว (PR #9 merge 4 พ.ย.)
 
 - **ปัญหา:** `pipeline.run(question, dataset_id, mode)` ต้องได้ schema DDL + การเชื่อมต่อฐานข้อมูลของ
   dataset นั้นจากฝั่งระบบ แต่ CONTRACT.md ยังไม่นิยามฟังก์ชันนี้
 - **ต้นเหตุ:** ยังไม่มีการตกลงรูปแบบฟังก์ชันระหว่าง Chalakorn กับ Suphakorn
-- **แก้อย่างไร:** ทำ stub ไว้ใน `services/api/app/agent/pipeline.py` ก่อน (เทสต์ monkeypatch แทน):
-
-  ```python
-  def get_dataset(dataset_id: str) -> tuple[str, duckdb.DuckDBPyConnection]:
-      """เปิด dataset แบบ read-only คืน (schema_ddl, duckdb_connection)"""
-  ```
-
-  ข้อเสนอรูปแบบฟังก์ชันนี้ยังไม่ได้เพิ่มลง `docs/CONTRACT.md` อย่างเป็นทางการ (Suphakorn ต้อง
-  review/เพิ่มเองในไฟล์นั้น) — ตอนนี้ `pipeline.py` เรียก `get_dataset()` แล้ว raise NotImplementedError
-- **ก่อน → หลัง:** `run()` เขียนไม่ได้เลยเพราะไม่รู้จะเปิด dataset ยังไง → เขียน+เทสต์ได้ครบ รอแค่เสียบ
-  ฟังก์ชันจริงจาก Suphakorn
+- **แก้อย่างไร:** ทำ stub ไว้ใน `services/api/app/agent/pipeline.py` ก่อน (เทสต์ monkeypatch แทน) —
+  Suphakorn เพิ่ม `db.open_dataset(dataset_id) -> tuple[str, duckdb.DuckDBPyConnection]` ตรงตามที่
+  เสนอไว้ลง `docs/CONTRACT.md` หัวข้อ 2 ใน PR #9 แล้ว พอ merge แล้วแก้ `pipeline.get_dataset()`
+  ให้เรียก `db.open_dataset()` ตรง ๆ แทน stub (ลบ `NotImplementedError` ออก)
+- **ก่อน → หลัง:** `run()` เขียนไม่ได้เลยเพราะไม่รู้จะเปิด dataset ยังไง → ต่อกับของจริงแล้ว ทดสอบ
+  `eval/run.py --predictor pipeline --modes M0 M3` กับ `MODEL_BACKEND=fake` จริงรันจบสำเร็จทั้งเส้น
+  (ก่อนหน้านี้พิสูจน์ได้แค่ด้วย monkeypatch ชั่วคราว) `pytest` ทั้งโฟลเดอร์ 131 ข้อผ่าน
 
 ## 6. sql_guard อ้างตารางนอก dataset ได้ ถ้าตั้งชื่อ CTE ซ้ำกับตารางจริง (พบจากรีวิวของ Wissarut)
 
