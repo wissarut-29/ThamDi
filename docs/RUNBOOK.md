@@ -79,5 +79,6 @@ API_URL=http://localhost:8000 DEMO_PASSWORD=<รหัสใน .env> sh scripts
 | หน้าเกี่ยวกับโมเดลขึ้น "ยังไม่พร้อม" นาน | ไม่มีไฟล์ใน `models/thamdi` หรือ RAM ไม่พอ → ดู log: `docker compose logs api` · ใช้ `DEMO_MODE=true` ระหว่างนั้น |
 | ตอบช้ามาก (> 5 วินาทีต่อข้อ บน CPU) | รันตรงบนเครื่องที่มี GPU (ติดตั้ง torch แบบ CUDA ตาม pytorch.org) · Docker + GPU บน Windows ต้อง WSL2 |
 | `pip install` ขึ้น `UnicodeDecodeError` | ใช้ requirements ล่าสุดจาก repo (ไฟล์ต้องเป็น ASCII) |
+| `UnicodeEncodeError: 'charmap'` ตอนรันสคริปต์ python (เช่น `make_demo_files.py`) บน Windows | terminal ไม่ใช่ UTF-8 → `export PYTHONUTF8=1` (Git Bash) หรือ `$env:PYTHONUTF8=1` (PowerShell) แล้วรันใหม่ · ไฟล์ที่สร้างแล้วไม่เสีย |
 | `sh: ... $'\r'` ตอนรัน `.sh` | ไฟล์ถูกแปลงเป็น CRLF → `git rm --cached -r . && git reset --hard` (มี `.gitattributes` บังคับ LF แล้ว) |
 | curl ส่งภาษาไทยแล้ว API ตอบ 400 | บน Windows ให้ส่ง JSON ผ่านไฟล์: `--data-binary @q.json` (ดู `scripts/smoke.sh`) |

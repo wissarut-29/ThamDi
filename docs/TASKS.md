@@ -11,6 +11,14 @@
 | หน้าที่พิเศษ | — | — | **เจ้าของ repo** (ตั้งค่า, สิทธิ์, branch protection) |
 | ดูแล | `ml/`, `agent/pipeline.py`, `preprocess.py`, `demo.py`, `sql_guard.py`, `thai_dates.py`, `tools.py`, `scripts/gen_sales_db.py`, `docs/MODEL_CARD.md` | `apps/web/`, `agent/model.py`, `answer.py`, `routers/` (ยกเว้น eval), `main.py`, `db.py`, `security.py`, `ingest.py`, Docker, `Makefile`, `.github/` | `eval/`, `routers/eval.py`, `README.md`, `docs/RUNBOOK.md`, `docs/DEMO_SCRIPT.md`, สไลด์ |
 
+## 📌 สถานะ ณ 4 พ.ย. 18:00
+
+| ใคร | เสร็จแล้ว | ยังเหลือ |
+|---|---|---|
+| Chalakorn | C1 · C2 โมเดล v1 · C3 · C5 โครงสร้าง + คำตอบเดโม 2 ข้อ (#18) · `get_dataset()` จริง (#18) · ปรับข้อมูลเทรนจากข้อผิดของ val | **C4 โมเดลสุดท้าย** (กำลังเทรนใหม่) · C5 รันคำถามเดโม 7 ข้อซ้ำกับโมเดลใหม่ · C6 เวลาเทรน/GPU ใน `MODEL_CARD.md` |
+| Suphakorn | S1–S4 · ลบตัวเสียบ `get_dataset` · ทดสอบโมเดล v1 จริง + ผลวัดใน RUNBOOK (#19) · ชื่อไทย `val_unseen` บนเว็บ | S5 แสดง `latest.json` จริง (รอ W5) · S6 เครื่องเดโม |
+| Wissarut | 1.1–1.8 · W1–W4 · W6 README/RUNBOOK/DEMO_SCRIPT · `dev` → `main` (#20) · ลองติดตั้งจาก clone ใหม่ | W5 eval รอบสุดท้าย (รอ C4) · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป · ตัดสินใจคำถามเดโม (รอ C5 รอบใหม่) · tag `v1.0` หลัง freeze |
+
 ---
 
 ## ขั้น 1 — สร้าง repo ใหม่ (3 พ.ย. เช้า · Wissarut เป็นเจ้าของ repo)
@@ -125,13 +133,13 @@ git push origin dev:main                          # main เริ่มจา�
 - [x] ไม่มีการเรียก API ภายนอกหรือค่าตั้ง/ข้อความที่ชวนเข้าใจว่าใช้
 - [x] ไม่มีลายน้ำ AI ทั้งใน commit ทุก branch, PR, โค้ด, เอกสาร และไม่มีไฟล์ตั้งค่าเครื่องมือ AI
 - [x] ไม่มี `.env`, ไฟล์โมเดล, `data/`, `*.duckdb` ในประวัติ git
-- [ ] CI 4 job เขียวบน `dev` และ `main`
+- [x] CI 4 job เขียวบน `dev` และ `main` (4 พ.ย. หลัง PR #20)
 - [x] CODEOWNERS มี 3 คน · README หัวข้อทีมมี 3 คนพร้อมงาน
 - [x] ลิงก์ทุกที่ชี้ไป `github.com/wissarut-29/ThamDi` (README, docs, CONTRACT) ไม่มีลิงก์ repo เก่า
-- [ ] `docs/STRUCTURE.md`, `TASKS.md`, `CONTRACT.md` ตรงกับของจริง
-- [ ] ทำตาม README บนเครื่องใหม่แล้วรันได้ตั้งแต่ clone จนถามคำถามได้
-- [ ] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น
-- [ ] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง
+- [x] `docs/STRUCTURE.md`, `TASKS.md`, `CONTRACT.md` ตรงกับของจริง (ตรวจ 4 พ.ย.)
+- [ ] ทำตาม README บนเครื่องใหม่แล้วรันได้ตั้งแต่ clone จนถามคำถามได้ — ทางไม่ใช้ Docker ผ่านแล้ว (clone → setup → data → test 133 ผ่าน → smoke ผ่าน) · ทาง Docker รอลองบนเครื่องเดโม (S6)
+- [ ] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น — license มีแล้ว (Apache 2.0) · เหลือเวลาเทรน/GPU (C6)
+- [ ] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง — `eval/run.py` เติมชื่อโมเดลและ GPU เองแล้ว · รอผลจริงจาก W5
 
 ## ✂️ ถ้าไม่ทัน ตัดตามลำดับ
 1. หน้า "เกี่ยวกับโมเดล" → ใส่ใน README/สไลด์

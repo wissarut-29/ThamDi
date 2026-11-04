@@ -42,6 +42,13 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 - รีวิว PR #12 (val 205 ข้อ) และ PR #16 ผ่านครบ · `eval/run.py` แยกชุด `val_unseen` ตามที่ตกลงใน PR #12 ข้อ 3
 - เหลือ: W5 (รอโมเดลสุดท้าย C4) · W6 ภาพหน้าจอ · W7
 
+**สถานะ (4 พ.ย. 18:00)**
+- merge PR #19 (Suphakorn) และ `dev` → `main` (PR #20) · แก้ CI `no-ai-watermark` ที่ขวาง PR เข้า `main` (PR #21) · CI เขียวทั้ง `dev` และ `main`
+- ลองติดตั้งจาก clone ใหม่แบบไม่ใช้ Docker: `setup` → `data` → `test` (pytest 133 ผ่าน, `--check-gold` ผ่าน) → API + เว็บ → `smoke.sh` ผ่านทุกขั้น
+- `eval/run.py` เติมชื่อ/เวอร์ชันโมเดลจาก `model_info()` และชื่อ GPU ลงผลเอง ไม่ต้องจำใส่ `--model-name`
+- อัปเดต `STRUCTURE.md`, `CONTRACT.md`, `TASKS.md` ให้ตรงกับโค้ด
+- เหลือ: W5 (รอ C4) · W6 ภาพหน้าจอ · W7 สไลด์ (ร่างแล้ว รอตัวเลขจาก W5) + คลิป (รอโมเดลสุดท้าย) · ตัดสินใจคำถามเดโม (รอ C5 รอบใหม่)
+
 ## จุดส่งของ
 
 | เวลา | ทิศทาง | อะไร |
@@ -75,13 +82,13 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 - [x] ไม่มีการเรียก API ภายนอกหรือค่าตั้ง/ข้อความที่ชวนเข้าใจว่าใช้
 - [x] ไม่มีลายน้ำ AI ทั้งใน commit ทุก branch, PR, โค้ด, เอกสาร และไม่มีไฟล์ตั้งค่าเครื่องมือ AI
 - [x] ไม่มี `.env`, ไฟล์โมเดล, `data/`, `*.duckdb` ในประวัติ git
-- [ ] CI 4 job เขียวบน `dev` และ `main`
+- [x] CI 4 job เขียวบน `dev` และ `main` (4 พ.ย. หลัง PR #20)
 - [x] CODEOWNERS มี 3 คน · README หัวข้อทีมมี 3 คนพร้อมงาน
 - [x] ลิงก์ทุกที่ชี้ไป `github.com/wissarut-29/ThamDi` (README, docs, CONTRACT)
-- [ ] `docs/STRUCTURE.md`, `TASKS.md`, `CONTRACT.md` ตรงกับของจริง
-- [ ] ทำตาม README บนเครื่องใหม่แล้วรันได้ตั้งแต่ clone จนถามคำถามได้
-- [ ] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น
-- [ ] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง
+- [x] `docs/STRUCTURE.md`, `TASKS.md`, `CONTRACT.md` ตรงกับของจริง (ตรวจ 4 พ.ย.)
+- [ ] ทำตาม README บนเครื่องใหม่แล้วรันได้ตั้งแต่ clone จนถามคำถามได้ — ทางไม่ใช้ Docker ผ่านแล้ว (clone → setup → data → test 133 ผ่าน → smoke ผ่าน) · ทาง Docker รอลองบนเครื่องเดโม (S6)
+- [ ] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น — license มีแล้ว (Apache 2.0) · เหลือเวลาเทรน/GPU (C6)
+- [ ] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง — `eval/run.py` เติมชื่อโมเดลและ GPU เองแล้ว · รอผลจริงจาก W5
 
 ## ✂️ ถ้าไม่ทัน ตัดตามลำดับ
 1. หน้า "เกี่ยวกับโมเดล" → ใส่ใน README/สไลด์

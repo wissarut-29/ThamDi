@@ -249,6 +249,15 @@ def check_gold() -> int:
     return 1 if problems else 0
 
 
+def machine_name() -> str:
+    """CPU + OS และ GPU ถ้าโมเดลรันบน GPU (ไม่ import torch เองถ้ายังไม่มีใครโหลด เช่นตอนใช้ mock)"""
+    text = f"{platform.processor() or platform.machine()} · {platform.system()} {platform.release()}"
+    torch = sys.modules.get("torch")
+    if torch is not None and torch.cuda.is_available():
+        text += f" · GPU {torch.cuda.get_device_name(0)}"
+    return text
+
+
 def run(predictor_name: str, modes: list[str], model_name: str, model_version: str) -> int:
     predict = mock_predict if predictor_name == "mock" else pipeline_predictor()
     sets = load_sets()
@@ -274,11 +283,20 @@ def run(predictor_name: str, modes: list[str], model_name: str, model_version: s
 
     RESULTS_DIR.mkdir(exist_ok=True)
     simulated = predictor_name == "mock"
+    if simulated:
+        model_name = "mock"
+    elif not model_name or not model_version:
+        # ไม่ได้ส่ง --model-name/--model-version มา ใช้ค่าจากโมเดลที่ pipeline โหลดจริง (เช็กลิสต์: ผล eval ต้องระบุโมเดล)
+        from app.agent.model import model_info
+
+        info = model_info()
+        model_name = model_name or f"{info['name']} ({info['backend']})"
+        model_version = model_version or info.get("version", "")
     out = {
         "generated_at": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
         "simulated": simulated,
-        "model": {"name": "mock" if simulated else model_name, "version": model_version},
-        "machine": f"{platform.processor() or platform.machine()} · {platform.system()} {platform.release()}",
+        "model": {"name": model_name, "version": model_version},
+        "machine": machine_name(),
         "results": results,
     }
     stem = "simulated" if simulated else "latest"
