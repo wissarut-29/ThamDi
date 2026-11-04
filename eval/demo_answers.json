@@ -2,13 +2,100 @@
   "ยอดขายรวมทั้งปีเท่าไหร่": {
     "answer": "คำตอบ: 11,566,602",
     "status": "ok",
-    "sql": "SELECT SUM(quantity * unit_price) FROM sales LIMIT 1000",
+    "sql": "SELECT SUM(amount) FROM sales",
     "columns": [
-      "sum((quantity * unit_price))"
+      "sum(amount)"
     ],
     "rows": [
       [
         11566602
+      ]
+    ]
+  },
+  "สาขาไหนขายดีที่สุด": {
+    "answer": "คำตอบ: branch = บางนา, total = 3,068,557",
+    "status": "ok",
+    "sql": "SELECT branch, SUM(amount) AS total FROM sales GROUP BY branch ORDER BY total DESC LIMIT 1",
+    "columns": [
+      "branch",
+      "total"
+    ],
+    "rows": [
+      [
+        "บางนา",
+        3068557
+      ]
+    ]
+  },
+  "ยอดขายแต่ละหมวดสินค้าเท่าไหร่": {
+    "answer": "พบ 3 รายการ (ดูในตารางด้านล่าง)",
+    "status": "ok",
+    "sql": "SELECT category, SUM(amount) AS total FROM sales GROUP BY category ORDER BY total DESC",
+    "columns": [
+      "category",
+      "total"
+    ],
+    "rows": [
+      [
+        "อาหาร",
+        4727032
+      ],
+      [
+        "เบเกอรี่",
+        3522740
+      ],
+      [
+        "เครื่องดื่ม",
+        3316830
+      ]
+    ]
+  },
+  "เดือนมีนาคม 2569 สาขาบางนาขายได้เท่าไหร่": {
+    "answer": "คำตอบ: 265,479",
+    "status": "ok",
+    "sql": "SELECT SUM(amount) FROM sales WHERE branch = 'บางนา' AND sale_date BETWEEN '2026-03-01' AND '2026-03-31'",
+    "columns": [
+      "sum(amount)"
+    ],
+    "rows": [
+      [
+        265479
+      ]
+    ]
+  },
+  "สินค้า 3 อันดับแรกที่ขายได้จำนวนชิ้นมากที่สุด": {
+    "answer": "พบ 3 รายการ (ดูในตารางด้านล่าง)",
+    "status": "ok",
+    "sql": "SELECT product, SUM(quantity) AS total FROM sales GROUP BY product ORDER BY total DESC LIMIT 3",
+    "columns": [
+      "product",
+      "total"
+    ],
+    "rows": [
+      [
+        "ชาไทย",
+        20753
+      ],
+      [
+        "ขนมปังสังขยา",
+        20679
+      ],
+      [
+        "ข้าวกะเพราไก่",
+        20637
+      ]
+    ]
+  },
+  "กาแฟเย็นขายได้กี่แก้วที่สาขาเชียงใหม่": {
+    "answer": "คำตอบ: 3,252",
+    "status": "ok",
+    "sql": "SELECT SUM(quantity) FROM sales WHERE product = 'กาแฟเย็น' AND branch = 'เชียงใหม่'",
+    "columns": [
+      "sum(quantity)"
+    ],
+    "rows": [
+      [
+        3252
       ]
     ]
   },
