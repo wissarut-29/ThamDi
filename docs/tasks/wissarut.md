@@ -72,9 +72,9 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 - เหลือ: merge #27 หลังแก้ → W5 → ส่ง `latest.json` ให้ S5 · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป · `dev` → `main` + tag `v1.0`
 
 **สถานะ (5 พ.ย. · ตรวจ PR ทั้งหมด)**
-- ✅ รีวิว #27 รอบ 6 (`16101c5`): แก้ครบ 5 ข้อจากรอบ 5 · รวมกับ `dev` ในเครื่องแล้ว pytest 152 ผ่าน · `--check-gold` ผ่าน · คีย์ `demo_answers.json` ตรงกับ DEMO_SCRIPT ครบ 7 ข้อ · `thai_dates` แปลง "มีนาคม 2569" → 2026-03 และ "ปี 2568" → 2025 ถูก · CI เขียว → พร้อม merge
+- ✅ รีวิว #27 รอบ 6 (`16101c5`): แก้ครบ 5 ข้อจากรอบ 5 · รวมกับ `dev` ในเครื่องแล้ว pytest 152 ผ่าน · `--check-gold` ผ่าน · คีย์ `demo_answers.json` ตรงกับ DEMO_SCRIPT ครบ 7 ข้อ · `thai_dates` แปลง "มีนาคม 2569" → 2026-03 และ "ปี 2568" → 2025 ถูก · CI เขียว → merge แล้ว (`5daa5df`)
 - ✅ `feat/wissarut` sync กับ `dev` แล้ว
-- ❌ merge #27 · ❌ W5 · ❌ W6 ภาพหน้าจอ · ❌ W7 สไลด์ + คลิป · ❌ `dev` → `main` + tag `v1.0`
+- ✅ merge #27 · ❌ W5 · ❌ W6 ภาพหน้าจอ · ❌ W7 สไลด์ + คลิป · ❌ `dev` → `main` + tag `v1.0`
 
 ## จุดส่งของ
 

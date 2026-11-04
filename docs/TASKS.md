@@ -15,10 +15,10 @@
 
 > ✅ **โมเดล v2 เทรนจริงแล้ว** (Wissarut โหลดมาเช็กแล้ว tensor ต่างจากโมเดลตั้งต้นจริง) · ทีมใช้ v2 ตัวนี้ตัวเดียว (W5, C5, S6)
 > ✅ **คำถามเดโมชุดใหม่** ใน [DEMO_SCRIPT.md](DEMO_SCRIPT.md) ถูกครบ 7/7 (#30) · **พิมพ์คำถามให้ตรงตัวอักษร**
-> ✅ **PR #27 แก้ครบตามรีวิวรอบ 5 แล้ว** (`16101c5`): `demo_answers.json` ชุดใหม่ 7 ข้อตรงตัวอักษร · ISSUES ข้อ 8/14 · MODEL_CARD 148.2 นาที / Tesla T4 · sync กับ `dev` แล้ว · Wissarut ลองรวมกับ `dev` ในเครื่อง: pytest 152 ผ่าน · `--check-gold` ผ่าน · CI 4 job เขียว → **พร้อม merge**
-> ⏭️ **ลำดับที่เหลือ:** merge #27 → W5 → S5 · Suphakorn ซ้อมบนโน้ตบุ๊กวันสอบ · Wissarut W6 ภาพหน้าจอ + W7 สไลด์/คลิป → `dev` → `main` + tag `v1.0`
+> ✅ **PR #27 แก้ครบตามรีวิวรอบ 5 แล้ว** (`16101c5`): `demo_answers.json` ชุดใหม่ 7 ข้อตรงตัวอักษร · ISSUES ข้อ 8/14 · MODEL_CARD 148.2 นาที / Tesla T4 · sync กับ `dev` แล้ว · Wissarut ลองรวมกับ `dev` ในเครื่อง: pytest 152 ผ่าน · `--check-gold` ผ่าน · CI 4 job เขียว → **merge แล้ว** (`5daa5df`)
+> ⏭️ **ลำดับที่เหลือ:** W5 → S5 · Suphakorn ซ้อมบนโน้ตบุ๊กวันสอบ · Wissarut W6 ภาพหน้าจอ + W7 สไลด์/คลิป → `dev` → `main` + tag `v1.0`
 
-**สถานะ branch (5 พ.ย.):** `feat/chalakorn` ไม่ตามหลัง `dev` · `feat/suphakorn` ตามหลัง `dev` 3 commit (ไม่มีงานค้าง — `git pull origin dev` ก่อนเริ่มงานใหม่) · `feat/wissarut` sync กับ `dev` แล้ว · ยังไม่มี tag `v1.0`
+**สถานะ branch (5 พ.ย.):** `feat/chalakorn` merge เข้า `dev` แล้ว (#27) · `feat/suphakorn` ตามหลัง `dev` 3 commit (ไม่มีงานค้าง — `git pull origin dev` ก่อนเริ่มงานใหม่) · `feat/wissarut` sync กับ `dev` แล้ว · ยังไม่มี tag `v1.0`
 
 #### 🔵 Chalakorn (@fffalafair)
 - ✅ C1 ไม่มี Groq/Gemini · ✅ C2 โมเดล v1 · ✅ C3 pipeline M0–M3 · ✅ `get_dataset()` จริง (#18)
@@ -33,7 +33,7 @@
 - ✅ S1–S4 · ✅ ลบตัวเสียบ `get_dataset` (#19) · ✅ รับ .xls .ods .tsv .txt .json (#22)
 - ✅ S6 ซ้อมบนเครื่องพัฒนาด้วย v2 ถูก 7/7 ครบเส้น 23 วินาที · ✅ `scripts/demo_check.py` · ✅ เช็กลิสต์เช้าวันสอบ (#29)
 - ❌ **S6 ซ้อมบนโน้ตบุ๊กวันสอบจริง** ด้วย `demo_check.py` (ลอง Docker ก่อน) → จดเวลา/RAM ใน RUNBOOK · ตั้ง `JWT_SECRET`, `DEMO_PASSWORD` ใหม่ · ลองตัดเน็ต
-- ❌ หลัง #27 merge: เช็ก `DEMO_MODE=true` ตอบคำถามเดโมได้ครบ 7 ข้อ
+- ❌ (#27 merge แล้ว ทำได้เลย) เช็ก `DEMO_MODE=true` ตอบคำถามเดโมได้ครบ 7 ข้อ
 - ❌ S5 หน้าผลการทดสอบแสดง `latest.json` จริงครบ 4 ชุด (รอ W5)
 - ❌ อัปเดต `feat/suphakorn` จาก `dev` (ตามหลัง 3 commit)
 - ❌ ซ้อมเดโมสด + ส่วน "สถาปัตยกรรม · ความปลอดภัย" 2 รอบ
@@ -42,7 +42,7 @@
 - ✅ 1.1–1.8 · ✅ W1–W4 · ✅ W6 README / RUNBOOK / DEMO_SCRIPT · ✅ คำถามเดโม 7/7 (#30)
 - ✅ `dev` → `main` (#20) · ✅ ลองติดตั้งจาก clone ใหม่ (ทางไม่ใช้ Docker)
 - ✅ รีวิว/merge #22–#25, #28, #29 · ✅ รีวิว #27 รอบ 6 (ผ่าน)
-- ❌ merge #27
+- ✅ merge #27 (`5daa5df`)
 - ❌ **W5** eval รอบสุดท้ายด้วย v2 → `eval/results/latest.json` + `failures.md` → ส่งให้ S5
 - ❌ W6 ภาพหน้าจอทุกหน้า
 - ❌ W7 สไลด์ 12–15 หน้า (หน้า 10 ใส่ "ยังไม่รับ PDF, Word, รูปภาพ") + คลิปเดโมสำรอง
