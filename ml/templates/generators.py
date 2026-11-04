@@ -24,18 +24,45 @@ def _col_thai(col: str) -> str:
     return COLUMN_THAI.get(col, col)
 
 
-def _pick_cat(spec, rng):
-    """เลือกคอลัมน์หมวดหมู่แบบสุ่มได้จาก dimA หรือ fact (ตัวไหนมีก็ใช้ตัวนั้น)"""
+def _all_cats(spec):
     choices = []
     for col, vals in spec.dimA.cat_cols.items():
         choices.append((spec.dimA.table, spec.dimA.thai, col, vals))
     for col, vals in spec.fact.cat_cols.items():
         choices.append((spec.fact.table, spec.fact.thai, col, vals))
-    return rng.choice(choices)
+    return choices
+
+
+def _pick_cat(spec, rng):
+    """เลือกคอลัมน์หมวดหมู่แบบสุ่มได้จาก dimA หรือ fact (ตัวไหนมีก็ใช้ตัวนั้น)"""
+    return rng.choice(_all_cats(spec))
 
 
 def gen_filter(spec, rng):
-    table, entity_thai, col, vals = _pick_cat(spec, rng)
+    choices = _all_cats(spec)
+    # ถ้ามีคอลัมน์หมวดหมู่ให้เลือกตั้งแต่ 2 ตัวขึ้นไป สุ่มครึ่งหนึ่งให้เป็นคำถามกรอง 2 เงื่อนไข
+    # พร้อมกัน (เดิมกรองได้แค่เงื่อนไขเดียวเท่านั้น ทำให้โมเดลไม่เคยเห็นคำถามแบบ "สินค้า X ที่สาขา Y")
+    if len(choices) >= 2 and rng.random() < 0.5:
+        (table1, thai1, col1, vals1), (table2, thai2, col2, vals2) = rng.sample(choices, 2)
+        value1, value2 = rng.choice(vals1), rng.choice(vals2)
+        entity_thai = thai1 if table1 == spec.fact.table else thai2 if table2 == spec.fact.table else thai1
+        if table1 == table2:
+            where = f"{table1}.{col1} = '{value1}' AND {table1}.{col2} = '{value2}'"
+            from_clause = table1
+        else:
+            where = f"{table1}.{col1} = '{value1}' AND {table2}.{col2} = '{value2}'"
+            from_clause = (
+                f"{spec.fact.table} JOIN {spec.dimA.table} "
+                f"ON {spec.dimA.table}.{spec.dimA.pk} = {spec.fact.table}.{spec.fact.fk_to_dimA}"
+            )
+        question = (
+            f"มี{entity_thai}กี่รายการที่{_col_thai(col1)}เป็น{value1}และ{_col_thai(col2)}เป็น{value2} "
+            f"ใน{spec.thai}"
+        )
+        sql = f"SELECT COUNT(*) FROM {from_clause} WHERE {where}"
+        return question, sql
+
+    table, entity_thai, col, vals = rng.choice(choices)
     value = rng.choice(vals)
     question = f"มี{entity_thai}กี่รายการที่{_col_thai(col)}เป็น{value} ใน{spec.thai}"
     sql = f"SELECT COUNT(*) FROM {table} WHERE {col} = '{value}'"
