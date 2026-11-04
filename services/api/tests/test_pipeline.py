@@ -63,10 +63,12 @@ def test_predict_sql_all_beams_are_special_tokens(monkeypatch):
     assert pipeline.predict_sql(QUESTION, SCHEMA, "M2") == "<CLARIFY>"
 
 
-def test_run_without_dataset_stub_raises_not_implemented(monkeypatch):
+def test_run_unknown_dataset_raises_key_error(monkeypatch):
+    # get_dataset() เรียก db.open_dataset() จริงแล้ว (ไม่ใช่ stub) — dataset ที่ไม่มีอยู่จริงต้อง
+    # ได้ KeyError ส่งต่อขึ้นไปตรง ๆ ให้ router แปลงเป็น 404 ตาม docs/CONTRACT.md
     monkeypatch.setattr(pipeline, "generate_sql", lambda prompt, n: ["SELECT * FROM orders"])
-    with pytest.raises(NotImplementedError):
-        pipeline.run(QUESTION, "dataset-1", "M0")
+    with pytest.raises(KeyError):
+        pipeline.run(QUESTION, "no-such-dataset", "M0")
 
 
 def test_run_ok_executes_against_fake_dataset(monkeypatch):
