@@ -24,8 +24,9 @@
   หลุดเข้าข้อมูลเทรน และไม่มีคำถามซ้ำกับ `eval/sets/handwritten.jsonl`)
 
 ## การเทรน
-- เวลาเทรน: 136.0 นาที (v2, บน Kaggle Notebooks — Colab ติด quota รอบนี้)
-- GPU / เครื่อง: Tesla T4 (Kaggle)
+- เวลาเทรน / GPU: **TODO — ต้องอัปเดตจากรอบเทรนที่สำเร็จจริงนี้** (ค่าที่เคยเขียนไว้ 136.0 นาที/Tesla T4
+  เป็นของรอบแรกที่ export ออกมาเป็นโมเดลตั้งต้น ไม่ได้เทรนจริง — ไม่แน่ใจว่าตรงกับรอบที่เทรนสำเร็จนี้
+  หรือไม่ รอค่าจากข้อความที่ cell สุดท้ายพิมพ์ออกมาตอนเทรนรอบนี้)
 - hyperparameters หลัก (ตั้งไว้ใน `ml/train.ipynb` CONFIG เหมือน v1 ทุกค่า เปลี่ยนแค่ข้อมูลเทรน):
   - fine-tune แบบ LoRA (`use_lora=True`): r=16, alpha=32, dropout=0.05
   - max_length=512, learning_rate=2e-4, epochs=3
@@ -33,21 +34,29 @@
   - seed=42
 
 ## ไฟล์โมเดล
-- **v2 (กำลังเทรนใหม่ — ลิงก์ด้านล่างยังใช้ไม่ได้):** Wissarut ตรวจพบว่าไฟล์ zip รอบแรกที่อัปโหลดเป็น
-  โมเดลตั้งต้น (`Qwen/Qwen2.5-0.5B-Instruct`) ที่ยังไม่ได้เทรนจริง (เทียบ tensor กับ HF แล้วต่างกัน 0
-  ทุกค่า) อยู่ระหว่างเทรนใหม่บน Kaggle แล้วเช็ค loss ก่อนอัปโหลดซ้ำ (ดู PR #27 สำหรับรายละเอียด)
-  ยังห้ามใช้ URL นี้รัน `make model`/W5/S6 จนกว่าจะอัปเดตรอบถัดไป
+- **v2 (เทรนจริงแล้ว ยืนยันแล้ว):** เทรนรอบที่ 2 บน Kaggle หลังพบว่า zip รอบแรกเป็นโมเดลตั้งต้นที่ยังไม่
+  ได้เทรน (ดู `docs/ISSUES.md` ข้อ 12) ยืนยันรอบนี้แล้วว่าเทรนจริง:
+  - เทียบ tensor 3 ตัวที่ LoRA แก้กับ `Qwen/Qwen2.5-0.5B-Instruct` บน HuggingFace ต่างกันจริง
+    (185.98 / 474.62 / 28.71 ไม่ใช่ 0)
+  - รันผ่าน `pipeline.predict_sql()` จริงด้วย 3 คำถามทดสอบ ได้ SQL ถูกต้องสะอาดทั้งหมด (นับแถว,
+    รวมยอดขาย, ปฏิเสธคำสั่งลบ) ไม่มี ` ```sql ` หรือข้อความต่อท้ายแบบไฟล์รอบแรก
+  - แก้บั๊ก `tokenizer_config.json` ที่ Kaggle เซฟ `extra_special_tokens` เป็น list แต่
+    `transformers>=4.56` (ที่ `requirements-model.txt` ของทีมใช้) ต้องการ dict ไม่งั้นโหลดไม่ขึ้นเลย
+    (ทุกคนจะเจอ ไม่ใช่แค่เครื่องเดียว) แก้ไฟล์นี้แล้วก่อนอัปโหลด และเพิ่มการแก้อัตโนมัติใน
+    `ml/train.ipynb` ให้รอบเทรนถัดไปไม่ต้องแก้มือ
 
-  รูปแบบคำสั่งที่ต้องใช้ (ตัวอย่างจากไฟล์รอบแรกที่พบว่ายังไม่ได้เทรน — จะอัปเดต id ใหม่หลังเทรนเสร็จ):
   ```
-  MODEL_URL="https://drive.usercontent.google.com/download?id=1dWj_CjDFrqR7gyUbAzJqPYrkkcQdvXYv&export=download&confirm=t" sh scripts/tasks.sh model
+  MODEL_URL="https://drive.usercontent.google.com/download?id=1t6C0u1mtA2KIQDO8q-fBrMVetH3-UEJi&export=download&confirm=t" sh scripts/tasks.sh model
   ```
   **ต้องมีเครื่องหมายคำพูดครอบ URL เสมอ** (`&` ในลิงก์จะถูก shell ตัดคำสั่งถ้าไม่มีเครื่องหมายคำพูด —
   Wissarut เจอใน PR #27) ใช้รูปแบบ URL นี้ ไม่ใช่ลิงก์ `/file/d/.../view` ตรง ๆ — ไฟล์ขนาดนี้ Google Drive
   เสิร์ฟหน้าเตือน "ไวรัสสแกนไม่ได้" (HTML ~2.4KB) แทนไฟล์จริงถ้าใช้ `curl -fL` กับลิงก์ view ตรง ๆ (ต้องมี
   `&confirm=t` ถึงจะได้ไฟล์จริง) ทดสอบดาวน์โหลดเต็มไฟล์ด้วย `curl -fL --retry 3` ตัวเดียวกับที่
-  `scripts/tasks.sh` ใช้แล้ว ได้ 763,595,638 ไบต์ ตรงกับไฟล์ต้นฉบับทุกไบต์ และ `unzip -t` ผ่านทั้ง 6 ไฟล์
-  ข้างในไม่มี error (ขั้นตอนดาวน์โหลดถูกต้อง แค่ไฟล์ข้างในยังไม่ได้เทรน)
+  `scripts/tasks.sh` ใช้แล้ว ได้ 763,594,123 ไบต์ ตรงกับไฟล์ต้นฉบับทุกไบต์ `unzip -t` ผ่านทั้ง 6 ไฟล์
+  ข้างในไม่มี error และเช็ค `tokenizer_config.json` ในไฟล์ที่ดาวน์โหลดมาแล้วว่า `extra_special_tokens`
+  เป็น dict ตามที่แก้ไว้ (รอด Google Drive upload/download round-trip มาไม่เพี้ยน)
+- โมเดลตั้งต้นที่หลุดเข้ามารอบแรก (ไม่ได้เทรน): เก็บไว้ที่ `models/thamdi_v2_untrained/` ในเครื่อง
+  Chalakorn เท่านั้น (ไม่ลบ เผื่อต้องย้อนดู) ไม่มีลิงก์แชร์ ไม่ควรใช้งาน
 - v1 (รอบแรก): เก็บสำรองไว้ที่ `models/thamdi_v1_backup/` ในเครื่องเดียวกัน ลิงก์เดิม
   https://drive.google.com/drive/folders/1oaQs9n2w3hh98_xpOImLDimZWRKIkKg-?usp=drive_link
   (ยังมีปัญหาลิงก์โฟลเดอร์แบบเดียวกัน ไม่ได้แก้)
