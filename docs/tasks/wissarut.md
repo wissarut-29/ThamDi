@@ -75,7 +75,8 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 - ✅ รีวิว #27 รอบ 6 (`16101c5`): แก้ครบ 5 ข้อจากรอบ 5 · รวมกับ `dev` ในเครื่องแล้ว pytest 152 ผ่าน · `--check-gold` ผ่าน · คีย์ `demo_answers.json` ตรงกับ DEMO_SCRIPT ครบ 7 ข้อ · `thai_dates` แปลง "มีนาคม 2569" → 2026-03 และ "ปี 2568" → 2025 ถูก · CI เขียว → merge แล้ว (`5daa5df`)
 - ✅ `feat/wissarut` sync กับ `dev` แล้ว
 - ✅ W5 (`MODEL_BACKEND=local`, โมเดล v2, RTX 3050 Ti · 04:28): `latest.json` ครบ 4 ชุด × M0–M3 · M3 handwritten 24.3% / unseen 34.3% / val 96.6% / val_unseen 78.8% · `failures.md` 5 แบบ · README ข้อ 8 ใส่ตารางจริงแล้ว
-- ✅ merge #27 · ✅ W5 · ❌ W6 ภาพหน้าจอ · ❌ W7 สไลด์ + คลิป · ❌ `dev` → `main` + tag `v1.0`
+- ✅ merge #27 · ✅ W5 · ✅ W6 ภาพหน้าจอ 7 หน้า (`docs/screenshots/`) · ✅ W7 สไลด์ 14 หน้า + คลิปสำรอง 7/7 (Release `v1.0`) · ✅ `dev` → `main` + tag `v1.0`
+- เหลือ: ซ้อมนำเสนอ 2 รอบ
 
 ## จุดส่งของ
 
