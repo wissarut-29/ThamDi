@@ -49,6 +49,16 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 - อัปเดต `STRUCTURE.md`, `CONTRACT.md`, `TASKS.md` ให้ตรงกับโค้ด
 - เหลือ: W5 (รอ C4) · W6 ภาพหน้าจอ · W7 สไลด์ (ร่างแล้ว รอตัวเลขจาก W5) + คลิป (รอโมเดลสุดท้าย) · ตัดสินใจคำถามเดโม (รอ C5 รอบใหม่)
 
+**สถานะ (4 พ.ย. 19:00)**
+- merge PR #22 (Suphakorn: รับ .xls .ods .tsv .txt .json + เดาตัวคั่น) · PR #23 (เอกสารตรงกับโค้ด) · PR #24 (Chalakorn: MODEL_CARD v2) · PR #25 (นามสกุลไฟล์ใน CONTRACT/README เว็บ) · ไม่มี PR เปิดค้าง
+- C6 เสร็จ: เวลาเทรน 136 นาที, Tesla T4 (Kaggle) → ติ๊กเช็กลิสต์ข้อ `MODEL_CARD.md`
+- เหลือ: W5 (รอลิงก์ zip โมเดล v2 จาก Chalakorn) · W6 ภาพหน้าจอ · W7 สไลด์ (หน้า 10 ข้อจำกัดเรื่องนามสกุลไฟล์ จาก PR #22) + คลิป · ตัดสินใจคำถามเดโม (รอ C5 กับ v2) · tag `v1.0`
+
+**สถานะ (4 พ.ย. 19:50)**
+- รีวิว PR #27 (Chalakorn) แล้ว: pytest 149 ผ่าน · ลิงก์โมเดล v2 เป็น zip จริง 763,595,638 ไบต์ · ขอแก้ 2 ข้อ: ใส่เครื่องหมายคำพูดครอบ `MODEL_URL` ใน `MODEL_CARD.md` และแปลง "ปี 2568" ที่ไม่มีชื่อเดือน (ในชุด handwritten มีราว 10 ข้อ)
+- ติ๊ก issue #10, #14 ให้ตรงกับงานที่ merge แล้ว
+- เหลือ: merge #27 หลังแก้ → W5 → ส่ง `latest.json` ให้ S5 · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป · ตัดสินใจคำถามเดโม (รอ C5 กับ v2) · tag `v1.0`
+
 ## จุดส่งของ
 
 | เวลา | ทิศทาง | อะไร |
@@ -87,7 +97,7 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 - [x] ลิงก์ทุกที่ชี้ไป `github.com/wissarut-29/ThamDi` (README, docs, CONTRACT)
 - [x] `docs/STRUCTURE.md`, `TASKS.md`, `CONTRACT.md` ตรงกับของจริง (ตรวจ 4 พ.ย.)
 - [ ] ทำตาม README บนเครื่องใหม่แล้วรันได้ตั้งแต่ clone จนถามคำถามได้ — ทางไม่ใช้ Docker ผ่านแล้ว (clone → setup → data → test 133 ผ่าน → smoke ผ่าน) · ทาง Docker รอลองบนเครื่องเดโม (S6)
-- [ ] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น — license มีแล้ว (Apache 2.0) · เหลือเวลาเทรน/GPU (C6)
+- [x] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น — license Apache 2.0 · เวลาเทรน 136 นาที, Tesla T4 (C6, PR #24)
 - [ ] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง — `eval/run.py` เติมชื่อโมเดลและ GPU เองแล้ว · รอผลจริงจาก W5
 
 ## ✂️ ถ้าไม่ทัน ตัดตามลำดับ
