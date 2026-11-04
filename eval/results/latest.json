@@ -1,0 +1,267 @@
+{
+  "generated_at": "2026-11-05T04:28:43+07:00",
+  "simulated": false,
+  "model": {
+    "name": "thamdi (Qwen2.5-0.5B-Instruct + LoRA, merged fp16)",
+    "version": "v2"
+  },
+  "machine": "AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD · Windows 11 · GPU NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+  "results": [
+    {
+      "mode": "M0",
+      "set": "handwritten",
+      "n": 70,
+      "execution_accuracy": 0.2429,
+      "valid_sql_rate": 0.8571,
+      "by_category": {
+        "aggregate": 0.5,
+        "filter": 0.1,
+        "group": 0.0,
+        "join": 0.0,
+        "rank": 0.4,
+        "refuse": 0.6,
+        "thai_date": 0.1
+      }
+    },
+    {
+      "mode": "M0",
+      "set": "unseen",
+      "n": 35,
+      "execution_accuracy": 0.3429,
+      "valid_sql_rate": 0.9143,
+      "by_category": {
+        "aggregate": 0.6,
+        "filter": 0.2,
+        "group": 0.0,
+        "join": 0.0,
+        "rank": 0.8,
+        "refuse": 0.6,
+        "thai_date": 0.2
+      }
+    },
+    {
+      "mode": "M0",
+      "set": "val",
+      "n": 205,
+      "execution_accuracy": 0.961,
+      "valid_sql_rate": 1.0,
+      "by_category": {
+        "aggregate": 1.0,
+        "filter": 0.8966,
+        "group": 1.0,
+        "join": 0.8333,
+        "rank": 1.0,
+        "refuse": 1.0,
+        "thai_date": 1.0
+      }
+    },
+    {
+      "mode": "M0",
+      "set": "val_unseen",
+      "n": 33,
+      "execution_accuracy": 0.7576,
+      "valid_sql_rate": 1.0,
+      "by_category": {
+        "aggregate": 1.0,
+        "filter": 0.25,
+        "group": 1.0,
+        "join": 0.0,
+        "rank": 1.0,
+        "refuse": 1.0,
+        "thai_date": 1.0
+      }
+    },
+    {
+      "mode": "M1",
+      "set": "handwritten",
+      "n": 70,
+      "execution_accuracy": 0.2571,
+      "valid_sql_rate": 0.8571,
+      "by_category": {
+        "aggregate": 0.5,
+        "filter": 0.1,
+        "group": 0.0,
+        "join": 0.0,
+        "rank": 0.3,
+        "refuse": 0.6,
+        "thai_date": 0.3
+      }
+    },
+    {
+      "mode": "M1",
+      "set": "unseen",
+      "n": 35,
+      "execution_accuracy": 0.3714,
+      "valid_sql_rate": 0.9143,
+      "by_category": {
+        "aggregate": 0.6,
+        "filter": 0.2,
+        "group": 0.0,
+        "join": 0.0,
+        "rank": 0.8,
+        "refuse": 0.6,
+        "thai_date": 0.4
+      }
+    },
+    {
+      "mode": "M1",
+      "set": "val",
+      "n": 205,
+      "execution_accuracy": 0.9561,
+      "valid_sql_rate": 1.0,
+      "by_category": {
+        "aggregate": 1.0,
+        "filter": 0.8966,
+        "group": 1.0,
+        "join": 0.8,
+        "rank": 1.0,
+        "refuse": 1.0,
+        "thai_date": 1.0
+      }
+    },
+    {
+      "mode": "M1",
+      "set": "val_unseen",
+      "n": 33,
+      "execution_accuracy": 0.7576,
+      "valid_sql_rate": 1.0,
+      "by_category": {
+        "aggregate": 1.0,
+        "filter": 0.25,
+        "group": 1.0,
+        "join": 0.0,
+        "rank": 1.0,
+        "refuse": 1.0,
+        "thai_date": 1.0
+      }
+    },
+    {
+      "mode": "M2",
+      "set": "handwritten",
+      "n": 70,
+      "execution_accuracy": 0.2571,
+      "valid_sql_rate": 0.8571,
+      "by_category": {
+        "aggregate": 0.5,
+        "filter": 0.1,
+        "group": 0.0,
+        "join": 0.0,
+        "rank": 0.4,
+        "refuse": 0.5,
+        "thai_date": 0.3
+      }
+    },
+    {
+      "mode": "M2",
+      "set": "unseen",
+      "n": 35,
+      "execution_accuracy": 0.3429,
+      "valid_sql_rate": 0.9429,
+      "by_category": {
+        "aggregate": 0.6,
+        "filter": 0.2,
+        "group": 0.0,
+        "join": 0.0,
+        "rank": 0.8,
+        "refuse": 0.4,
+        "thai_date": 0.4
+      }
+    },
+    {
+      "mode": "M2",
+      "set": "val",
+      "n": 205,
+      "execution_accuracy": 0.9561,
+      "valid_sql_rate": 1.0,
+      "by_category": {
+        "aggregate": 1.0,
+        "filter": 0.931,
+        "group": 1.0,
+        "join": 0.7667,
+        "rank": 1.0,
+        "refuse": 1.0,
+        "thai_date": 1.0
+      }
+    },
+    {
+      "mode": "M2",
+      "set": "val_unseen",
+      "n": 33,
+      "execution_accuracy": 0.7879,
+      "valid_sql_rate": 1.0,
+      "by_category": {
+        "aggregate": 1.0,
+        "filter": 0.5,
+        "group": 1.0,
+        "join": 0.0,
+        "rank": 1.0,
+        "refuse": 1.0,
+        "thai_date": 1.0
+      }
+    },
+    {
+      "mode": "M3",
+      "set": "handwritten",
+      "n": 70,
+      "execution_accuracy": 0.2429,
+      "valid_sql_rate": 0.9286,
+      "by_category": {
+        "aggregate": 0.5,
+        "filter": 0.1,
+        "group": 0.0,
+        "join": 0.0,
+        "rank": 0.3,
+        "refuse": 0.5,
+        "thai_date": 0.3
+      }
+    },
+    {
+      "mode": "M3",
+      "set": "unseen",
+      "n": 35,
+      "execution_accuracy": 0.3429,
+      "valid_sql_rate": 1.0,
+      "by_category": {
+        "aggregate": 0.6,
+        "filter": 0.2,
+        "group": 0.0,
+        "join": 0.0,
+        "rank": 0.8,
+        "refuse": 0.4,
+        "thai_date": 0.4
+      }
+    },
+    {
+      "mode": "M3",
+      "set": "val",
+      "n": 205,
+      "execution_accuracy": 0.9659,
+      "valid_sql_rate": 1.0,
+      "by_category": {
+        "aggregate": 1.0,
+        "filter": 0.931,
+        "group": 1.0,
+        "join": 0.8333,
+        "rank": 1.0,
+        "refuse": 1.0,
+        "thai_date": 1.0
+      }
+    },
+    {
+      "mode": "M3",
+      "set": "val_unseen",
+      "n": 33,
+      "execution_accuracy": 0.7879,
+      "valid_sql_rate": 1.0,
+      "by_category": {
+        "aggregate": 1.0,
+        "filter": 0.5,
+        "group": 1.0,
+        "join": 0.0,
+        "rank": 1.0,
+        "refuse": 1.0,
+        "thai_date": 1.0
+      }
+    }
+  ]
+}

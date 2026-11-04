@@ -34,7 +34,7 @@
 - ✅ S6 ซ้อมบนเครื่องพัฒนาด้วย v2 ถูก 7/7 ครบเส้น 23 วินาที · ✅ `scripts/demo_check.py` · ✅ เช็กลิสต์เช้าวันสอบ (#29)
 - ❌ **S6 ซ้อมบนโน้ตบุ๊กวันสอบจริง** ด้วย `demo_check.py` (ลอง Docker ก่อน) → จดเวลา/RAM ใน RUNBOOK · ตั้ง `JWT_SECRET`, `DEMO_PASSWORD` ใหม่ · ลองตัดเน็ต
 - ❌ (#27 merge แล้ว ทำได้เลย) เช็ก `DEMO_MODE=true` ตอบคำถามเดโมได้ครบ 7 ข้อ
-- ❌ S5 หน้าผลการทดสอบแสดง `latest.json` จริงครบ 4 ชุด (รอ W5)
+- ❌ S5 หน้าผลการทดสอบแสดง `latest.json` จริงครบ 4 ชุด (W5 เสร็จแล้ว รอ PR ของ Wissarut merge)
 - ❌ อัปเดต `feat/suphakorn` จาก `dev` (ตามหลัง 3 commit)
 - ❌ ซ้อมเดโมสด + ส่วน "สถาปัตยกรรม · ความปลอดภัย" 2 รอบ
 
@@ -43,7 +43,7 @@
 - ✅ `dev` → `main` (#20) · ✅ ลองติดตั้งจาก clone ใหม่ (ทางไม่ใช้ Docker)
 - ✅ รีวิว/merge #22–#25, #28, #29 · ✅ รีวิว #27 รอบ 6 (ผ่าน)
 - ✅ merge #27 (`5daa5df`)
-- ❌ **W5** eval รอบสุดท้ายด้วย v2 → `eval/results/latest.json` + `failures.md` → ส่งให้ S5
+- ✅ **W5** eval รอบสุดท้ายด้วย v2 → `eval/results/latest.json` (4 ชุด × M0–M3) + `failures.md` · M3: handwritten 24.3% · unseen 34.3% · val 96.6% · val_unseen 78.8% → ส่งให้ S5 ได้แล้ว
 - ❌ W6 ภาพหน้าจอทุกหน้า
 - ❌ W7 สไลด์ 12–15 หน้า (หน้า 10 ใส่ "ยังไม่รับ PDF, Word, รูปภาพ") + คลิปเดโมสำรอง
 - ❌ `dev` → `main` + tag `v1.0` หลัง freeze
@@ -168,7 +168,7 @@ git push origin dev:main                          # main เริ่มจา�
 - [x] `docs/STRUCTURE.md`, `TASKS.md`, `CONTRACT.md` ตรงกับของจริง (ตรวจ 4 พ.ย.)
 - [ ] ทำตาม README บนเครื่องใหม่แล้วรันได้ตั้งแต่ clone จนถามคำถามได้ — ทางไม่ใช้ Docker ผ่านแล้ว (clone → setup → data → test 133 ผ่าน → smoke ผ่าน) · ทาง Docker รอลองบนเครื่องเดโม (S6)
 - [x] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น — license Apache 2.0 · เวลาเทรน 136 นาที, Tesla T4 (C6, PR #24)
-- [ ] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง — `eval/run.py` เติมชื่อโมเดลและ GPU เองแล้ว · รอผลจริงจาก W5
+- [x] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง — W5 5 พ.ย.: `latest.json` ครบ 4 ชุด × M0–M3 · thamdi v2 · RTX 3050 Ti
 
 ## ✂️ ถ้าไม่ทัน ตัดตามลำดับ
 1. หน้า "เกี่ยวกับโมเดล" → ใส่ใน README/สไลด์
