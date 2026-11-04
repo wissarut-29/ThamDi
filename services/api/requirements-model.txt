@@ -1,0 +1,7 @@
+# Only for MODEL_BACKEND=local (install on top of requirements.txt)
+# For GPU, install torch from pytorch.org first, then this file
+torch>=2.3
+# dtype= keyword (torch_dtype is deprecated in transformers 5)
+transformers>=4.56
+safetensors>=0.4
+accelerate>=0.33

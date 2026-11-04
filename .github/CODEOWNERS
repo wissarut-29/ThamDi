@@ -1,0 +1,46 @@
+# เจ้าของไฟล์ตาม docs/TASKS.md และ docs/STRUCTURE.md · PR ที่แตะไฟล์เหล่านี้ต้องให้เจ้าของ review
+# บรรทัดที่อยู่ล่างกว่าชนะ (เช่น routers/eval.py ทับ routers/)
+# ไฟล์ร่วมใส่ทั้ง 3 คน (ต้องมีอีก 1 คน review)
+
+# Suphakorn — ระบบ
+/apps/web/                          @SoSick41
+/services/api/app/main.py           @SoSick41
+/services/api/app/db.py             @SoSick41
+/services/api/app/security.py       @SoSick41
+/services/api/app/ingest.py         @SoSick41
+/services/api/app/agent/model.py    @SoSick41
+/services/api/app/agent/answer.py   @SoSick41
+/services/api/app/routers/          @SoSick41
+/services/api/requirements*.txt     @SoSick41
+/services/api/pyproject.toml        @SoSick41
+/services/api/Dockerfile            @SoSick41
+/apps/web/Dockerfile                @SoSick41
+/docker-compose.yml                 @SoSick41
+/Makefile                           @SoSick41
+/scripts/                           @SoSick41
+/.github/                           @SoSick41
+
+# Chalakorn — โมเดล
+/ml/                                    @fffalafair
+/services/api/app/agent/pipeline.py     @fffalafair
+/services/api/app/agent/preprocess.py   @fffalafair
+/services/api/app/agent/sql_guard.py    @fffalafair
+/services/api/app/agent/thai_dates.py   @fffalafair
+/services/api/app/agent/tools.py        @fffalafair
+/services/api/app/agent/demo.py         @fffalafair
+/scripts/hooks/                         @fffalafair
+/scripts/gen_sales_db.py                @fffalafair
+/docs/MODEL_CARD.md                     @fffalafair
+
+# Wissarut — วัดผล (แยกจากคนเทรนโมเดล) + นำเสนอ
+/eval/                              @wissarut-29
+/services/api/app/routers/eval.py   @wissarut-29
+/eval/demo_answers.json             @fffalafair
+/docs/DEMO_SCRIPT.md                @wissarut-29
+
+# ไฟล์ร่วม
+/README.md                      @fffalafair @SoSick41 @wissarut-29
+/docs/RUNBOOK.md                @SoSick41 @wissarut-29
+/services/api/app/config.py     @fffalafair @SoSick41 @wissarut-29
+/.env.example                   @fffalafair @SoSick41 @wissarut-29
+/docs/CONTRACT.md               @fffalafair @SoSick41 @wissarut-29
