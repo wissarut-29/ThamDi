@@ -14,7 +14,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import db
 from .agent import model as model_backend
-from .agent import pipeline
 from .config import get_settings
 from .routers import auth, chat, datasets, model
 from .routers import eval as eval_router
@@ -41,14 +40,7 @@ async def lifespan(_app: FastAPI):
     # โหลดโมเดลใน thread แยก API ตอบได้ทันที (ระหว่างนั้น /api/model บอก loaded=false)
     threading.Thread(target=model_backend.preload, name="model-preload", daemon=True).start()
 
-    # ชั่วคราว: pipeline.get_dataset() ยังเป็น stub (docs/ISSUES.md ข้อ 5) จึงเสียบ db.open_dataset
-    # ตอนแอปเริ่ม และคืนของเดิมตอนปิด · ลบเมื่อ Chalakorn ให้ get_dataset เรียก db.open_dataset แล้ว
-    original_get_dataset = pipeline.get_dataset
-    pipeline.get_dataset = db.open_dataset
-    try:
-        yield
-    finally:
-        pipeline.get_dataset = original_get_dataset
+    yield
 
 
 def create_app() -> FastAPI:

@@ -4,7 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import AppShell from "../../components/AppShell";
 import { api } from "../../lib/api";
 
-const SETS = { handwritten: "เขียนด้วยมือ", unseen: "schema ที่โมเดลไม่เคยเห็น", val: "validation", independent: "ชุดทดสอบอิสระ" };
+const SETS = {
+  handwritten: "เขียนด้วยมือ",
+  unseen: "schema ที่โมเดลไม่เคยเห็น",
+  val: "validation",
+  val_unseen: "validation (schema ที่ไม่ได้เทรน)",
+  independent: "ชุดทดสอบอิสระ",
+};
 const pct = (v) => (typeof v === "number" ? `${(v * 100).toFixed(1)}%` : "-");
 
 function ModelInfo({ info }) {

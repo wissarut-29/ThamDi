@@ -97,7 +97,7 @@ class _LocalModel:
                 tokenizer = AutoTokenizer.from_pretrained(path)
                 if tokenizer.pad_token is None:
                     tokenizer.pad_token = tokenizer.eos_token
-                model = AutoModelForCausalLM.from_pretrained(path, torch_dtype=dtype)
+                model = AutoModelForCausalLM.from_pretrained(path, dtype=dtype)
                 model.to(self.device).eval()
             except Exception as exc:  # RAM ไม่พอ / ไฟล์เสีย ต้องไม่ทำให้ API ล่ม
                 self.error = f"โหลดโมเดลไม่ขึ้น: {type(exc).__name__}: {exc}"
