@@ -11,13 +11,16 @@
 | หน้าที่พิเศษ | — | — | **เจ้าของ repo** (ตั้งค่า, สิทธิ์, branch protection) |
 | ดูแล | `ml/`, `agent/pipeline.py`, `preprocess.py`, `demo.py`, `sql_guard.py`, `thai_dates.py`, `tools.py`, `scripts/gen_sales_db.py`, `docs/MODEL_CARD.md` | `apps/web/`, `agent/model.py`, `answer.py`, `routers/` (ยกเว้น eval), `main.py`, `db.py`, `security.py`, `ingest.py`, Docker, `Makefile`, `.github/` | `eval/`, `routers/eval.py`, `README.md`, `docs/RUNBOOK.md`, `docs/DEMO_SCRIPT.md`, สไลด์ |
 
-## 📌 สถานะ ณ 4 พ.ย. 18:00
+## 📌 สถานะ ณ 5 พ.ย.
+
+> ✅ **โมเดล v2 เทรนจริงแล้ว** (ลิงก์ใหม่ใน PR #27 · Wissarut โหลดมาเช็กแล้ว tensor ต่างจากโมเดลตั้งต้นจริง) · ทีมใช้ v2 ตัวนี้ตัวเดียว (W5, C5, S6)
+> 🔁 **เปลี่ยนคำถามเดโมแล้ว** ชุดเดิม v2 ถูกแค่ 3/7 · ชุดใหม่ใน [DEMO_SCRIPT.md](DEMO_SCRIPT.md) ทดสอบกับ v2 แล้วถูกครบ 7/7 · **พิมพ์คำถามให้ตรงตัวอักษร**
 
 | ใคร | เสร็จแล้ว | ยังเหลือ |
 |---|---|---|
-| Chalakorn | C1 · C2 โมเดล v1 · C3 · C5 โครงสร้าง + คำตอบเดโม 2 ข้อ (#18) · `get_dataset()` จริง (#18) · ปรับข้อมูลเทรนจากข้อผิดของ val | **C4 โมเดลสุดท้าย** (กำลังเทรนใหม่) · C5 รันคำถามเดโม 7 ข้อซ้ำกับโมเดลใหม่ · C6 เวลาเทรน/GPU ใน `MODEL_CARD.md` |
-| Suphakorn | S1–S4 · ลบตัวเสียบ `get_dataset` · ทดสอบโมเดล v1 จริง + ผลวัดใน RUNBOOK (#19) · ชื่อไทย `val_unseen` บนเว็บ | S5 แสดง `latest.json` จริง (รอ W5) · S6 เครื่องเดโม |
-| Wissarut | 1.1–1.8 · W1–W4 · W6 README/RUNBOOK/DEMO_SCRIPT · `dev` → `main` (#20) · ลองติดตั้งจาก clone ใหม่ | W5 eval รอบสุดท้าย (รอ C4) · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป · ตัดสินใจคำถามเดโม (รอ C5 รอบใหม่) · tag `v1.0` หลัง freeze |
+| Chalakorn | C1 · C2 โมเดล v1 · C3 · C5 โครงสร้าง + คำตอบเดโม 2 ข้อ (#18) · `get_dataset()` จริง (#18) · ปรับข้อมูลเทรนจากข้อผิดของ val · C4 เทรนโมเดล v2 แล้ว · C6 `MODEL_CARD.md` ครบ (#24) · C4 v2 รอบ 2 เทรนจริง + แก้ `tokenizer_config.json` (#27) | **PR #27:** อัปเดตจาก `dev` · เติมเวลาเทรน/GPU ใน `MODEL_CARD.md` · C5 `eval/demo_answers.json` ใส่คำตอบชุดคำถามเดโมใหม่ 7 ข้อตาม DEMO_SCRIPT |
+| Suphakorn | S1–S4 · ลบตัวเสียบ `get_dataset` · ทดสอบโมเดล v1 จริง + ผลวัดใน RUNBOOK (#19) · ชื่อไทย `val_unseen` บนเว็บ · รับ .xls .ods .tsv .txt .json (#22) | S5 แสดง `latest.json` จริง (รอ W5) · **PR #29:** อัปเดตจาก `dev` · ซ้อม S6 ซ้ำด้วย v2 (ลิงก์ใน `MODEL_CARD.md` ของ #27) ด้วยคำถามเดโมชุดใหม่ · ระบุเครื่องเดโม |
+| Wissarut | 1.1–1.8 · W1–W4 · W6 README/RUNBOOK/DEMO_SCRIPT · `dev` → `main` (#20) · ลองติดตั้งจาก clone ใหม่ · รีวิว/merge #22–#25 · รีวิว #27 · อัปเดต issue #10, #14 · merge #28 · เช็กโมเดล v2 รอบ 2 · เปลี่ยนคำถามเดโม (W6) | W5 eval รอบสุดท้าย (รอ #27 merge) · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป (หน้า 10 ใส่ "ยังไม่รับ PDF, Word, รูปภาพ") · tag `v1.0` หลัง freeze |
 
 ---
 
@@ -138,7 +141,7 @@ git push origin dev:main                          # main เริ่มจา�
 - [x] ลิงก์ทุกที่ชี้ไป `github.com/wissarut-29/ThamDi` (README, docs, CONTRACT) ไม่มีลิงก์ repo เก่า
 - [x] `docs/STRUCTURE.md`, `TASKS.md`, `CONTRACT.md` ตรงกับของจริง (ตรวจ 4 พ.ย.)
 - [ ] ทำตาม README บนเครื่องใหม่แล้วรันได้ตั้งแต่ clone จนถามคำถามได้ — ทางไม่ใช้ Docker ผ่านแล้ว (clone → setup → data → test 133 ผ่าน → smoke ผ่าน) · ทาง Docker รอลองบนเครื่องเดโม (S6)
-- [ ] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น — license มีแล้ว (Apache 2.0) · เหลือเวลาเทรน/GPU (C6)
+- [x] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น — license Apache 2.0 · เวลาเทรน 136 นาที, Tesla T4 (C6, PR #24)
 - [ ] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง — `eval/run.py` เติมชื่อโมเดลและ GPU เองแล้ว · รอผลจริงจาก W5
 
 ## ✂️ ถ้าไม่ทัน ตัดตามลำดับ
