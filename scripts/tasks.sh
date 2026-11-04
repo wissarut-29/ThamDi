@@ -28,7 +28,9 @@ model)
     dest=${MODEL_PATH:-models/thamdi}
     mkdir -p "$dest"
     tmp="$dest.download.zip"
-    curl -fL --retry 3 -o "$tmp" "$MODEL_URL"
+    # MODEL_CURL_OPTS=--ssl-no-revoke ใช้บน Windows ที่ curl ขึ้น CRYPT_E_REVOCATION_OFFLINE
+    # shellcheck disable=SC2086
+    curl -fL --retry 3 ${MODEL_CURL_OPTS:-} -o "$tmp" "$MODEL_URL"
     # zip จาก Drive มักมีโฟลเดอร์ชั้นบนครอบ (เช่น model/config.json) → ย้ายของข้างในขึ้นมาไว้ที่ $dest ตรง ๆ
     "$PYTHON" - "$tmp" "$dest" <<'PY'
 import shutil, sys, tempfile, zipfile
