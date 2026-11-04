@@ -73,7 +73,11 @@ jobs:
           fi
           echo "ตรวจช่วง $BASE..$HEAD"
           fail=0
-          if git log --format='%an <%ae>%n%B' "$BASE..$HEAD" | grep -iE "$WATERMARK_PATTERN"; then
+          # ข้าม 0238f66 (เพิ่ม hook ใน PR #5) ข้อความ commit อธิบายแพตเทิร์นที่ตรวจ จึงตรงกับแพตเทิร์นเอง
+          # เจอตอน PR dev -> main ที่ตรวจตั้งแต่ initial commit
+          ALLOWED_COMMITS='0238f66c48913f88af44075341010e85194ee701'
+          if git rev-list "$BASE..$HEAD" | grep -vxF "$ALLOWED_COMMITS" \
+              | xargs -r git log --no-walk --format='%an <%ae>%n%B' | grep -iE "$WATERMARK_PATTERN"; then
             echo "::error::พบลายน้ำ AI ในข้อความ commit"
             fail=1
           fi
