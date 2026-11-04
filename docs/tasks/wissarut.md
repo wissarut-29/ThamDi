@@ -63,6 +63,21 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 - W5 ยังไม่รัน (รันกับโมเดลตั้งต้นไม่มีความหมาย) · README ชุด val แก้เป็น 205 ข้อ + `val_unseen` 33 ข้อ
 - เหลือ: merge #27 หลังแก้ → W5 → ส่ง `latest.json` ให้ S5 · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป · ตัดสินใจคำถามเดโม (รอ C5 กับ v2) · tag `v1.0`
 
+**สถานะ (5 พ.ย. 03:00)**
+- รีวิว #27 รอบ 4: โมเดล v2 รอบ 2 เทรนจริง (tensor ต่าง 185.98 / 474.62 / 28.71) · คำถามเดโมชุดเก่าได้ 3/7
+- เปลี่ยนคำถามเดโมข้อ 2, 4, 5, 6 → ถูก 7/7 · merge #30 แล้ว
+- รีวิว #27 รอบ 5: `demo_answers.json` ยังเป็นชุดเก่า · ISSUES ข้อ 14 (1/7) ไม่ตรงกับผลของทีม · ISSUES ข้อ 8 · TODO เวลาเทรนใน `MODEL_CARD.md`
+- รีวิว #29 รอบ 3: Suphakorn แก้ครบแล้ว (`c41d3ad` · 7/7 ครบเส้น 23 วินาที) · เหลือซ้อมบนโน้ตบุ๊กวันสอบ
+- merge #29 แล้ว
+- เหลือ: merge #27 หลังแก้ → W5 → ส่ง `latest.json` ให้ S5 · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป · `dev` → `main` + tag `v1.0`
+
+**สถานะ (5 พ.ย. · ตรวจ PR ทั้งหมด)**
+- ✅ รีวิว #27 รอบ 6 (`16101c5`): แก้ครบ 5 ข้อจากรอบ 5 · รวมกับ `dev` ในเครื่องแล้ว pytest 152 ผ่าน · `--check-gold` ผ่าน · คีย์ `demo_answers.json` ตรงกับ DEMO_SCRIPT ครบ 7 ข้อ · `thai_dates` แปลง "มีนาคม 2569" → 2026-03 และ "ปี 2568" → 2025 ถูก · CI เขียว → merge แล้ว (`5daa5df`)
+- ✅ `feat/wissarut` sync กับ `dev` แล้ว
+- ✅ W5 (`MODEL_BACKEND=local`, โมเดล v2, RTX 3050 Ti · 04:28): `latest.json` ครบ 4 ชุด × M0–M3 · M3 handwritten 24.3% / unseen 34.3% / val 96.6% / val_unseen 78.8% · `failures.md` 5 แบบ · README ข้อ 8 ใส่ตารางจริงแล้ว
+- ✅ merge #27 · ✅ W5 · ✅ W6 ภาพหน้าจอ 7 หน้า (`docs/screenshots/`) · ✅ W7 สไลด์ 14 หน้า + คลิปสำรอง 7/7 (Release `v1.0`) · ✅ `dev` → `main` + tag `v1.0`
+- เหลือ: ซ้อมนำเสนอ 2 รอบ
+
 ## จุดส่งของ
 
 | เวลา | ทิศทาง | อะไร |
@@ -102,7 +117,7 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 - [x] `docs/STRUCTURE.md`, `TASKS.md`, `CONTRACT.md` ตรงกับของจริง (ตรวจ 4 พ.ย.)
 - [ ] ทำตาม README บนเครื่องใหม่แล้วรันได้ตั้งแต่ clone จนถามคำถามได้ — ทางไม่ใช้ Docker ผ่านแล้ว (clone → setup → data → test 133 ผ่าน → smoke ผ่าน) · ทาง Docker รอลองบนเครื่องเดโม (S6)
 - [x] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น — license Apache 2.0 · เวลาเทรน 136 นาที, Tesla T4 (C6, PR #24)
-- [ ] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง — `eval/run.py` เติมชื่อโมเดลและ GPU เองแล้ว · รอผลจริงจาก W5
+- [x] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง — W5 5 พ.ย.: `latest.json` ครบ 4 ชุด × M0–M3 · thamdi v2 · RTX 3050 Ti
 
 ## ✂️ ถ้าไม่ทัน ตัดตามลำดับ
 1. หน้า "เกี่ยวกับโมเดล" → ใส่ใน README/สไลด์

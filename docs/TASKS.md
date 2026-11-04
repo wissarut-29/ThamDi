@@ -11,16 +11,45 @@
 | หน้าที่พิเศษ | — | — | **เจ้าของ repo** (ตั้งค่า, สิทธิ์, branch protection) |
 | ดูแล | `ml/`, `agent/pipeline.py`, `preprocess.py`, `demo.py`, `sql_guard.py`, `thai_dates.py`, `tools.py`, `scripts/gen_sales_db.py`, `docs/MODEL_CARD.md` | `apps/web/`, `agent/model.py`, `answer.py`, `routers/` (ยกเว้น eval), `main.py`, `db.py`, `security.py`, `ingest.py`, Docker, `Makefile`, `.github/` | `eval/`, `routers/eval.py`, `README.md`, `docs/RUNBOOK.md`, `docs/DEMO_SCRIPT.md`, สไลด์ |
 
-## 📌 สถานะ ณ 5 พ.ย.
+## 📌 สถานะ ณ 5 พ.ย. (ตรวจ GitHub + เครื่อง Wissarut)
 
-> ✅ **โมเดล v2 เทรนจริงแล้ว** (ลิงก์ใหม่ใน PR #27 · Wissarut โหลดมาเช็กแล้ว tensor ต่างจากโมเดลตั้งต้นจริง) · ทีมใช้ v2 ตัวนี้ตัวเดียว (W5, C5, S6)
-> 🔁 **เปลี่ยนคำถามเดโมแล้ว** ชุดเดิม v2 ถูกแค่ 3/7 · ชุดใหม่ใน [DEMO_SCRIPT.md](DEMO_SCRIPT.md) ทดสอบกับ v2 แล้วถูกครบ 7/7 · **พิมพ์คำถามให้ตรงตัวอักษร**
+> ✅ **โมเดล v2 เทรนจริงแล้ว** (Wissarut โหลดมาเช็กแล้ว tensor ต่างจากโมเดลตั้งต้นจริง) · ทีมใช้ v2 ตัวนี้ตัวเดียว (W5, C5, S6)
+> ✅ **คำถามเดโมชุดใหม่** ใน [DEMO_SCRIPT.md](DEMO_SCRIPT.md) ถูกครบ 7/7 (#30) · **พิมพ์คำถามให้ตรงตัวอักษร**
+> ✅ **PR #27 แก้ครบตามรีวิวรอบ 5 แล้ว** (`16101c5`): `demo_answers.json` ชุดใหม่ 7 ข้อตรงตัวอักษร · ISSUES ข้อ 8/14 · MODEL_CARD 148.2 นาที / Tesla T4 · sync กับ `dev` แล้ว · Wissarut ลองรวมกับ `dev` ในเครื่อง: pytest 152 ผ่าน · `--check-gold` ผ่าน · CI 4 job เขียว → **merge แล้ว** (`5daa5df`)
+> ✅ **W5 · W6 ภาพหน้าจอ · W7 สไลด์ + คลิปสำรอง เสร็จแล้ว** (5 พ.ย.) · คลิปสำรองอยู่ใน GitHub Release `v1.0`
+> ⏭️ **ลำดับที่เหลือ:** Suphakorn ซ้อมบนโน้ตบุ๊กวันสอบ · ทุกคนซ้อมนำเสนอ 2 รอบ
 
-| ใคร | เสร็จแล้ว | ยังเหลือ |
-|---|---|---|
-| Chalakorn | C1 · C2 โมเดล v1 · C3 · C5 โครงสร้าง + คำตอบเดโม 2 ข้อ (#18) · `get_dataset()` จริง (#18) · ปรับข้อมูลเทรนจากข้อผิดของ val · C4 เทรนโมเดล v2 แล้ว · C6 `MODEL_CARD.md` ครบ (#24) · C4 v2 รอบ 2 เทรนจริง + แก้ `tokenizer_config.json` (#27) | **PR #27:** อัปเดตจาก `dev` · เติมเวลาเทรน/GPU ใน `MODEL_CARD.md` · C5 `eval/demo_answers.json` ใส่คำตอบชุดคำถามเดโมใหม่ 7 ข้อตาม DEMO_SCRIPT |
-| Suphakorn | S1–S4 · ลบตัวเสียบ `get_dataset` · ทดสอบโมเดล v1 จริง + ผลวัดใน RUNBOOK (#19) · ชื่อไทย `val_unseen` บนเว็บ · รับ .xls .ods .tsv .txt .json (#22) | S5 แสดง `latest.json` จริง (รอ W5) · **PR #29:** อัปเดตจาก `dev` · ซ้อม S6 ซ้ำด้วย v2 (ลิงก์ใน `MODEL_CARD.md` ของ #27) ด้วยคำถามเดโมชุดใหม่ · ระบุเครื่องเดโม |
-| Wissarut | 1.1–1.8 · W1–W4 · W6 README/RUNBOOK/DEMO_SCRIPT · `dev` → `main` (#20) · ลองติดตั้งจาก clone ใหม่ · รีวิว/merge #22–#25 · รีวิว #27 · อัปเดต issue #10, #14 · merge #28 · เช็กโมเดล v2 รอบ 2 · เปลี่ยนคำถามเดโม (W6) | W5 eval รอบสุดท้าย (รอ #27 merge) · W6 ภาพหน้าจอ · W7 สไลด์ + คลิป (หน้า 10 ใส่ "ยังไม่รับ PDF, Word, รูปภาพ") · tag `v1.0` หลัง freeze |
+**สถานะ branch (5 พ.ย.):** `feat/chalakorn` merge เข้า `dev` แล้ว (#27) · `feat/suphakorn` ตามหลัง `dev` 3 commit (ไม่มีงานค้าง — `git pull origin dev` ก่อนเริ่มงานใหม่) · `feat/wissarut` sync กับ `dev` แล้ว · tag `v1.0` แล้ว
+
+#### 🔵 Chalakorn (@fffalafair)
+- ✅ C1 ไม่มี Groq/Gemini · ✅ C2 โมเดล v1 · ✅ C3 pipeline M0–M3 · ✅ `get_dataset()` จริง (#18)
+- ✅ C4 โมเดล v2 รอบ 2 เทรนจริง + แก้ `tokenizer_config.json` (#27)
+- ✅ C5 `eval/demo_answers.json` ชุดใหม่ครบ 7 ข้อ (#27)
+- ✅ C6 `MODEL_CARD.md` ครบ ไม่มี TODO (#24, #27)
+- ✅ `thai_dates` "มีนาคม 2569" / "ปี 2568" (#27)
+- ❌ ซ้อมนำเสนอส่วน "ข้อมูลเทรน · การเทรน · ทำไมไม่ใช่แค่จำแม่แบบ" 2 รอบ
+- ❌ ข้อ 6 ใน DEMO_SCRIPT: เปิดหน้า "เกี่ยวกับโมเดล" ตอนเดโม
+
+#### 🟣 Suphakorn (@SoSick41)
+- ✅ S1–S4 · ✅ ลบตัวเสียบ `get_dataset` (#19) · ✅ รับ .xls .ods .tsv .txt .json (#22)
+- ✅ S6 ซ้อมบนเครื่องพัฒนาด้วย v2 ถูก 7/7 ครบเส้น 23 วินาที · ✅ `scripts/demo_check.py` · ✅ เช็กลิสต์เช้าวันสอบ (#29)
+- ❌ **S6 ซ้อมบนโน้ตบุ๊กวันสอบจริง** ด้วย `demo_check.py` (ลอง Docker ก่อน) → จดเวลา/RAM ใน RUNBOOK · ตั้ง `JWT_SECRET`, `DEMO_PASSWORD` ใหม่ · ลองตัดเน็ต
+- ❌ (#27 merge แล้ว ทำได้เลย) เช็ก `DEMO_MODE=true` ตอบคำถามเดโมได้ครบ 7 ข้อ
+- ✅ S5 หน้าผลการทดสอบแสดง `latest.json` จริงครบ 4 ชุด (Wissarut เช็กบนเว็บแล้ว ดู `docs/screenshots/07_model_results.png`)
+- ❌ หน้า "เกี่ยวกับโมเดล" ช่อง "โมเดลตั้งต้น" และ "เวอร์ชัน" ยังขึ้น `-` (ควรเป็น Qwen2.5-0.5B-Instruct / v2)
+- ❌ อัปเดต `feat/suphakorn` จาก `dev` (ตามหลัง 3 commit)
+- ❌ ซ้อมเดโมสด + ส่วน "สถาปัตยกรรม · ความปลอดภัย" 2 รอบ
+
+#### 🟢 Wissarut (@wissarut-29)
+- ✅ 1.1–1.8 · ✅ W1–W4 · ✅ W6 README / RUNBOOK / DEMO_SCRIPT · ✅ คำถามเดโม 7/7 (#30)
+- ✅ `dev` → `main` (#20) · ✅ ลองติดตั้งจาก clone ใหม่ (ทางไม่ใช้ Docker)
+- ✅ รีวิว/merge #22–#25, #28, #29 · ✅ รีวิว #27 รอบ 6 (ผ่าน)
+- ✅ merge #27 (`5daa5df`)
+- ✅ **W5** eval รอบสุดท้ายด้วย v2 → `eval/results/latest.json` (4 ชุด × M0–M3) + `failures.md` · M3: handwritten 24.3% · unseen 34.3% · val 96.6% · val_unseen 78.8% → ส่งให้ S5 ได้แล้ว
+- ✅ W6 ภาพหน้าจอทุกหน้า (โมเดล v2 จริง) → `docs/screenshots/` + README ข้อ 5
+- ✅ W7 สไลด์ 14 หน้า แบ่งคนพูดใน speaker notes (หน้า 12 ข้อจำกัด มี "ยังไม่รับ PDF, Word, รูปภาพ")
+- ✅ W7 คลิปเดโมสำรอง: ถามคำถามเดโม 7 ข้อกับโมเดล v2 จริง ถูก 7/7 → แนบใน GitHub Release `v1.0`
+- ✅ `dev` → `main` + tag `v1.0`
 
 ---
 
@@ -142,7 +171,7 @@ git push origin dev:main                          # main เริ่มจา�
 - [x] `docs/STRUCTURE.md`, `TASKS.md`, `CONTRACT.md` ตรงกับของจริง (ตรวจ 4 พ.ย.)
 - [ ] ทำตาม README บนเครื่องใหม่แล้วรันได้ตั้งแต่ clone จนถามคำถามได้ — ทางไม่ใช้ Docker ผ่านแล้ว (clone → setup → data → test 133 ผ่าน → smoke ผ่าน) · ทาง Docker รอลองบนเครื่องเดโม (S6)
 - [x] มี `MODEL_CARD.md` และ license ของโมเดลตั้งต้น — license Apache 2.0 · เวลาเทรน 136 นาที, Tesla T4 (C6, PR #24)
-- [ ] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง — `eval/run.py` เติมชื่อโมเดลและ GPU เองแล้ว · รอผลจริงจาก W5
+- [x] ผล eval มีทั้ง handwritten และ unseen schema · ระบุโมเดล วันที่ เครื่อง — W5 5 พ.ย.: `latest.json` ครบ 4 ชุด × M0–M3 · thamdi v2 · RTX 3050 Ti
 
 ## ✂️ ถ้าไม่ทัน ตัดตามลำดับ
 1. หน้า "เกี่ยวกับโมเดล" → ใส่ใน README/สไลด์
