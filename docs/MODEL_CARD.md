@@ -33,12 +33,21 @@
   - seed=42
 
 ## ไฟล์โมเดล
-- **v2 (ปัจจุบัน):** `MODEL_URL=https://drive.usercontent.google.com/download?id=1dWj_CjDFrqR7gyUbAzJqPYrkkcQdvXYv&export=download&confirm=t`
-  (ไฟล์ zip เดี่ยว ~728MB บน Google Drive แชร์แบบ "ทุกคนที่มีลิงก์") ใช้รูปแบบ URL นี้ ไม่ใช่ลิงก์
-  `/file/d/.../view` ตรง ๆ — ไฟล์ขนาดนี้ Google Drive เสิร์ฟหน้าเตือน "ไวรัสสแกนไม่ได้" (HTML ~2.4KB)
-  แทนไฟล์จริงถ้าใช้ `curl -fL` กับลิงก์ view ตรง ๆ (ต้องมี `&confirm=t` ถึงจะได้ไฟล์จริง) ทดสอบดาวน์โหลด
-  เต็มไฟล์ด้วย `curl -fL --retry 3` ตัวเดียวกับที่ `scripts/tasks.sh` ใช้แล้ว ได้ 763,595,638 ไบต์
-  ตรงกับไฟล์ต้นฉบับทุกไบต์ และ `unzip -t` ผ่านทั้ง 6 ไฟล์ข้างในไม่มี error
+- **v2 (กำลังเทรนใหม่ — ลิงก์ด้านล่างยังใช้ไม่ได้):** Wissarut ตรวจพบว่าไฟล์ zip รอบแรกที่อัปโหลดเป็น
+  โมเดลตั้งต้น (`Qwen/Qwen2.5-0.5B-Instruct`) ที่ยังไม่ได้เทรนจริง (เทียบ tensor กับ HF แล้วต่างกัน 0
+  ทุกค่า) อยู่ระหว่างเทรนใหม่บน Kaggle แล้วเช็ค loss ก่อนอัปโหลดซ้ำ (ดู PR #27 สำหรับรายละเอียด)
+  ยังห้ามใช้ URL นี้รัน `make model`/W5/S6 จนกว่าจะอัปเดตรอบถัดไป
+
+  รูปแบบคำสั่งที่ต้องใช้ (ตัวอย่างจากไฟล์รอบแรกที่พบว่ายังไม่ได้เทรน — จะอัปเดต id ใหม่หลังเทรนเสร็จ):
+  ```
+  MODEL_URL="https://drive.usercontent.google.com/download?id=1dWj_CjDFrqR7gyUbAzJqPYrkkcQdvXYv&export=download&confirm=t" sh scripts/tasks.sh model
+  ```
+  **ต้องมีเครื่องหมายคำพูดครอบ URL เสมอ** (`&` ในลิงก์จะถูก shell ตัดคำสั่งถ้าไม่มีเครื่องหมายคำพูด —
+  Wissarut เจอใน PR #27) ใช้รูปแบบ URL นี้ ไม่ใช่ลิงก์ `/file/d/.../view` ตรง ๆ — ไฟล์ขนาดนี้ Google Drive
+  เสิร์ฟหน้าเตือน "ไวรัสสแกนไม่ได้" (HTML ~2.4KB) แทนไฟล์จริงถ้าใช้ `curl -fL` กับลิงก์ view ตรง ๆ (ต้องมี
+  `&confirm=t` ถึงจะได้ไฟล์จริง) ทดสอบดาวน์โหลดเต็มไฟล์ด้วย `curl -fL --retry 3` ตัวเดียวกับที่
+  `scripts/tasks.sh` ใช้แล้ว ได้ 763,595,638 ไบต์ ตรงกับไฟล์ต้นฉบับทุกไบต์ และ `unzip -t` ผ่านทั้ง 6 ไฟล์
+  ข้างในไม่มี error (ขั้นตอนดาวน์โหลดถูกต้อง แค่ไฟล์ข้างในยังไม่ได้เทรน)
 - v1 (รอบแรก): เก็บสำรองไว้ที่ `models/thamdi_v1_backup/` ในเครื่องเดียวกัน ลิงก์เดิม
   https://drive.google.com/drive/folders/1oaQs9n2w3hh98_xpOImLDimZWRKIkKg-?usp=drive_link
   (ยังมีปัญหาลิงก์โฟลเดอร์แบบเดียวกัน ไม่ได้แก้)

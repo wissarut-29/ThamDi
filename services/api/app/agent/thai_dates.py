@@ -25,11 +25,14 @@ _MONTH_PATTERN = "|".join(THAI_MONTHS)
 # ช่วงปี พ.ศ. ที่เป็นไปได้จริง (กัน false positive กับเลข 4 หลักอื่นที่ไม่ใช่ปี)
 _BE_YEAR_MIN, _BE_YEAR_MAX = 2400, 2700
 
+# (?!\d) กันจับเลขเกิน 4 หลัก (เช่น "มีนาคม 25690" ต้องไม่จับ "2569" แล้วปล่อย "0" ตกค้าง)
 # "พ.ศ. 2568" หรือ "พ.ศ.2568" หรือ "พศ 2568" (ต้องมี พ.ศ. ตรงตัว)
-_BE_YEAR_PATTERN = re.compile(r"พ\.?ศ\.?\s*(\d{4})")
+_BE_YEAR_PATTERN = re.compile(r"พ\.?ศ\.?\s*(\d{4})(?!\d)")
 # เดือนไทย + ปี ในประโยคเดียวกัน เช่น "เดือนสิงหาคม ปี พ.ศ. 2568" หรือ "มีนาคม 2569"
 # (พ.ศ. ไม่ต้องมีก็ได้ — ปีเขียนติดเดือนไทยแบบนี้แปลว่า พ.ศ. เสมอในภาษาไทย)
-_MONTH_YEAR_PATTERN = re.compile(rf"({_MONTH_PATTERN})\s*(?:ปี\s*)?(?:พ\.?ศ\.?\s*)?(\d{{4}})")
+_MONTH_YEAR_PATTERN = re.compile(rf"({_MONTH_PATTERN})\s*(?:ปี\s*)?(?:พ\.?ศ\.?\s*)?(\d{{4}})(?!\d)")
+# "ปี 2568" ไม่มีเดือนไทยนำหน้า ไม่มี พ.ศ. เลย เช่น "ยอดขายปี 2568"
+_BARE_YEAR_PATTERN = re.compile(r"ปี\s*(\d{4})(?!\d)")
 
 
 def _is_plausible_be_year(year: int) -> bool:
@@ -47,13 +50,18 @@ def month_range(year_ce: int, month: int) -> tuple[str, str]:
     return f"{year_ce:04d}-{month:02d}-01", f"{year_ce:04d}-{month:02d}-{last_day:02d}"
 
 
+def _not_yet_covered(span: tuple[int, int], covered: list[tuple[int, int]]) -> bool:
+    start, _ = span
+    return not any(c_start <= start < c_end for c_start, c_end in covered)
+
+
 def extract_date_ranges(text: str) -> list[tuple[str, str]]:
-    """หาวันที่แบบตรงตัว (พ.ศ. อย่างเดียว หรือ เดือนไทย+พ.ศ.) ในข้อความ คืนเป็นช่วงวันที่ (start, end)
+    """หาวันที่แบบตรงตัว (พ.ศ. อย่างเดียว หรือ เดือนไทย+พ.ศ./ปี) ในข้อความ คืนเป็นช่วงวันที่ (start, end)
 
     ไม่รองรับวันที่สัมพัทธ์ (ดูเหตุผลใน docstring ของไฟล์)
     """
     ranges = []
-    matched_spans = []
+    covered = []
 
     for m in _MONTH_YEAR_PATTERN.finditer(text):
         year = int(m.group(2))
@@ -61,13 +69,24 @@ def extract_date_ranges(text: str) -> list[tuple[str, str]]:
             continue
         month = _MONTH_INDEX[m.group(1)]
         ranges.append(month_range(be_to_ce(year), month))
-        matched_spans.append(m.span())
+        covered.append(m.span())
 
     for m in _BE_YEAR_PATTERN.finditer(text):
-        if any(start <= m.start() < end for start, end in matched_spans):
+        if not _not_yet_covered(m.span(), covered):
             continue  # ปีนี้ถูกจับไปแล้วเป็นส่วนหนึ่งของคู่เดือน+ปีด้านบน
         year_ce = be_to_ce(int(m.group(1)))
         ranges.append((f"{year_ce:04d}-01-01", f"{year_ce:04d}-12-31"))
+        covered.append(m.span())
+
+    for m in _BARE_YEAR_PATTERN.finditer(text):
+        year = int(m.group(1))
+        if not _is_plausible_be_year(year):
+            continue
+        if not _not_yet_covered(m.span(), covered):
+            continue
+        year_ce = be_to_ce(year)
+        ranges.append((f"{year_ce:04d}-01-01", f"{year_ce:04d}-12-31"))
+        covered.append(m.span())
 
     return ranges
 
@@ -76,7 +95,8 @@ def normalize_thai_dates(text: str) -> str:
     """แทนที่ปี พ.ศ. ในข้อความด้วยปี ค.ศ. ตรง ๆ (ชื่อเดือนไทยคงไว้ ไม่แปลงเป็นเลข
     เพราะโมเดลเรียนรู้แปลงชื่อเดือนไทยเป็นเลขเดือนในขั้นตอนเทรนแล้ว)
 
-    รองรับทั้ง "พ.ศ. 2568" ตรงตัว และปีที่เขียนติดเดือนไทยแบบไม่มี พ.ศ. เช่น "มีนาคม 2569"
+    รองรับทั้ง "พ.ศ. 2568" ตรงตัว, ปีที่เขียนติดเดือนไทยแบบไม่มี พ.ศ. เช่น "มีนาคม 2569",
+    และปีเดี่ยว ๆ ไม่มีเดือนไม่มี พ.ศ. เช่น "ยอดขายปี 2568"
     """
     replacements: list[tuple[int, int, str]] = []
 
@@ -88,9 +108,19 @@ def normalize_thai_dates(text: str) -> str:
 
     covered = [(s, e) for s, e, _ in replacements]
     for m in _BE_YEAR_PATTERN.finditer(text):
-        if any(start <= m.start() < end for start, end in covered):
+        if not _not_yet_covered(m.span(), covered):
             continue  # ส่วนนี้ถูกแทนไปแล้วเป็นส่วนหนึ่งของคู่เดือน+ปีด้านบน
         replacements.append((m.start(), m.end(), f"ค.ศ. {be_to_ce(int(m.group(1)))}"))
+        covered.append(m.span())
+
+    for m in _BARE_YEAR_PATTERN.finditer(text):
+        year = int(m.group(1))
+        if not _is_plausible_be_year(year):
+            continue
+        if not _not_yet_covered(m.span(), covered):
+            continue
+        replacements.append((m.start(), m.end(), f"ปี ค.ศ. {be_to_ce(year)}"))
+        covered.append(m.span())
 
     if not replacements:
         return text

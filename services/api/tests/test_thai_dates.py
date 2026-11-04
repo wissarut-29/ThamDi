@@ -61,3 +61,21 @@ def test_extract_date_ranges_month_and_bare_year():
     text = "ในเดือนมีนาคม 2569"
     ranges = extract_date_ranges(text)
     assert ranges == [("2026-03-01", "2026-03-31")]
+
+
+def test_normalize_replaces_bare_year_no_month():
+    text = "ยอดขายปี 2568"
+    result = normalize_thai_dates(text)
+    assert "ปี ค.ศ. 2025" in result
+    assert "2568" not in result
+
+
+def test_normalize_does_not_overmatch_extra_digit():
+    text = "มีนาคม 25690"
+    assert normalize_thai_dates(text) == text
+
+
+def test_extract_date_ranges_bare_year_no_month():
+    text = "ปี 2568 เก็บค่ารักษาได้รวมเท่าไร"
+    ranges = extract_date_ranges(text)
+    assert ranges == [("2025-01-01", "2025-12-31")]
