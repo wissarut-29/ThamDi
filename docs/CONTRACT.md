@@ -92,7 +92,7 @@ render(question: str, result: PipelineResult) -> str
 | Method | Path | ส่ง | ได้ |
 |---|---|---|---|
 | POST | `/api/auth/login` | `{username, password}` | `{token}` |
-| POST | `/api/datasets` | ไฟล์ `.csv`/`.xlsx` ไม่เกิน 10 MB (multipart) | `201` `{dataset_id, tables}` · ไฟล์อ่านไม่ได้ `400` · ใหญ่เกิน `413` |
+| POST | `/api/datasets` | ไฟล์ตาราง `.csv` `.tsv` `.txt` `.xlsx` `.xls` `.ods` `.json` ไม่เกิน 10 MB (multipart) | `201` `{dataset_id, tables}` · ไฟล์อ่านไม่ได้ `400` · ใหญ่เกิน `413` |
 | GET | `/api/datasets` | — | `[{dataset_id, name, tables}]` |
 | POST | `/api/chat` | `{dataset_id, question}` (คำถามไม่เกิน 500 ตัวอักษร) | `{answer, status, sql, columns, rows}` · มีคำถามอื่นกำลังรัน `503` |
 | GET | `/api/model` | — | ผลของ `model_info()` |
