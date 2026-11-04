@@ -67,7 +67,7 @@ API_URL=http://localhost:8000 DEMO_PASSWORD=<รหัสใน .env> sh scripts
 ```
 `smoke.sh` ต้องจบด้วย `smoke: ผ่านทุกขั้น` (401 → login → อัปโหลด → chat → ข้อมูลโมเดล)
 
-ด้วยมือ: เปิด http://localhost:3000 → login `demo` → อัปโหลด .csv/.xlsx → ถาม "มีกี่สาขา" → ได้คำตอบ + SQL + ตาราง
+ด้วยมือ: เปิด http://localhost:3000 → login `demo` → อัปโหลดไฟล์ตาราง (.csv/.xlsx ฯลฯ) → ถาม "มีกี่สาขา" → ได้คำตอบ + SQL + ตาราง
 
 ## ปัญหาที่พบบ่อย
 | อาการ | วิธีแก้ |
