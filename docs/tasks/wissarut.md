@@ -36,8 +36,11 @@ GitHub: @wissarut-29 · branch: `feat/wissarut` · ที่มา: [docs/TASKS.
 **สถานะ (4 พ.ย.)**
 - PR #9 merge เข้า `dev` แล้ว · ลองรวมกับ PR #12 ในเครื่อง: pytest 130 ข้อผ่าน · `--predictor pipeline` รันครบ handwritten/unseen/val (โมเดลปลอม) · ทดสอบครบเส้นผ่าน API (อัปโหลด `ยอดขาย.csv`, `order.csv` แล้วถามได้)
 - W3 ✅ `predict_sql()` และ M0–M3 จาก Chalakorn ใช้ได้แล้ว
-- เหลือ: W4 · W5 (รอโมเดลสุดท้าย) · W6 (คำถามเดโมส่ง Chalakorn ภายใน 12:00) · W7
 - จุดส่งของ 12:00 → ส่ง [eval/schemas/README.md](../../eval/schemas/README.md) ให้ Chalakorn
+- W4 ✅ [eval/results/w4_user_test.md](../../eval/results/w4_user_test.md) API 22/22 · พบปัญหา 1 ข้อ (`AGENTS.md`) Suphakorn แก้แล้วใน PR #16
+- W6 ✅ README 10 หัวข้อ · `DEMO_SCRIPT.md` คำถามเดโม 7 ข้อส่ง Chalakorn แล้ว (C5) · เหลือภาพหน้าจอทุกหน้า
+- รีวิว PR #12 (val 205 ข้อ) และ PR #16 ผ่านครบ · `eval/run.py` แยกชุด `val_unseen` ตามที่ตกลงใน PR #12 ข้อ 3
+- เหลือ: W5 (รอโมเดลสุดท้าย C4) · W6 ภาพหน้าจอ · W7
 
 ## จุดส่งของ
 
