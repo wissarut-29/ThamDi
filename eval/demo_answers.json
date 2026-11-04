@@ -12,17 +12,15 @@
       ]
     ]
   },
-  "สาขาไหนขายดีที่สุด": {
-    "answer": "คำตอบ: branch = บางนา, total = 3,068,557",
+  "ยอดขายรวมของสาขาบางนาเท่าไหร่": {
+    "answer": "คำตอบ: 3,068,557",
     "status": "ok",
-    "sql": "SELECT branch, SUM(amount) AS total FROM sales GROUP BY branch ORDER BY total DESC LIMIT 1",
+    "sql": "SELECT SUM(amount) FROM sales WHERE branch = 'บางนา'",
     "columns": [
-      "branch",
-      "total"
+      "sum(amount)"
     ],
     "rows": [
       [
-        "บางนา",
         3068557
       ]
     ]
@@ -50,52 +48,52 @@
       ]
     ]
   },
-  "เดือนมีนาคม 2569 สาขาบางนาขายได้เท่าไหร่": {
-    "answer": "คำตอบ: 265,479",
+  "ยอดขายรวมเดือนมีนาคม 2569 เท่าไหร่": {
+    "answer": "คำตอบ: 965,871",
     "status": "ok",
-    "sql": "SELECT SUM(amount) FROM sales WHERE branch = 'บางนา' AND sale_date BETWEEN '2026-03-01' AND '2026-03-31'",
+    "sql": "SELECT SUM(amount) FROM sales WHERE sale_date BETWEEN '2026-03-01' AND '2026-03-31'",
     "columns": [
       "sum(amount)"
     ],
     "rows": [
       [
-        265479
+        965871
       ]
     ]
   },
-  "สินค้า 3 อันดับแรกที่ขายได้จำนวนชิ้นมากที่สุด": {
+  "สินค้าที่มียอดขายรวมมากที่สุด 3 อันดับ": {
     "answer": "พบ 3 รายการ (ดูในตารางด้านล่าง)",
     "status": "ok",
-    "sql": "SELECT product, SUM(quantity) AS total FROM sales GROUP BY product ORDER BY total DESC LIMIT 3",
+    "sql": "SELECT product, SUM(amount) AS total FROM sales GROUP BY product ORDER BY total DESC LIMIT 3",
     "columns": [
       "product",
       "total"
     ],
     "rows": [
       [
-        "ชาไทย",
-        20753
-      ],
-      [
-        "ขนมปังสังขยา",
-        20679
+        "สลัดอกไก่",
+        1797177
       ],
       [
         "ข้าวกะเพราไก่",
-        20637
+        1547775
+      ],
+      [
+        "ข้าวผัดหมู",
+        1382080
       ]
     ]
   },
-  "กาแฟเย็นขายได้กี่แก้วที่สาขาเชียงใหม่": {
-    "answer": "คำตอบ: 3,252",
+  "ยอดขายรวมของสินค้ากาแฟเย็นเท่าไหร่": {
+    "answer": "คำตอบ: 1,076,515",
     "status": "ok",
-    "sql": "SELECT SUM(quantity) FROM sales WHERE product = 'กาแฟเย็น' AND branch = 'เชียงใหม่'",
+    "sql": "SELECT SUM(amount) FROM sales WHERE product = 'กาแฟเย็น'",
     "columns": [
-      "sum(quantity)"
+      "sum(amount)"
     ],
     "rows": [
       [
-        3252
+        1076515
       ]
     ]
   },
