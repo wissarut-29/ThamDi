@@ -15,6 +15,14 @@ def test_plain_select_passes_and_gets_limit():
     assert "LIMIT" in result.upper()
 
 
+def test_blocks_malformed_sql_with_unterminated_string_literal():
+    # เจอจริงตอนรัน eval กับโมเดลที่เทรนได้: โมเดลสร้าง SQL ที่ตัดกลางสตริงค่าวันที่ ทำให้
+    # sqlglot โยน TokenError (ไม่ใช่ ParseError) ที่ check_sql เดิมไม่ได้ดักไว้ พังทั้ง eval run
+    sql = "SELECT * FROM orders WHERE order_date >= '2023-09-01'' AND order_date <= '2023-09-30'"
+    with pytest.raises(SqlGuardError):
+        check_sql(sql, ALLOWED)
+
+
 def test_existing_limit_not_duplicated():
     result = check_sql("SELECT * FROM customers LIMIT 5", ALLOWED)
     assert result.upper().count("LIMIT") == 1

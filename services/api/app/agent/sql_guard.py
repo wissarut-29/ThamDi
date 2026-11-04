@@ -78,7 +78,12 @@ def check_sql(sql: str, allowed_tables: set[str], default_limit: int = DEFAULT_L
 
     try:
         statements = [s for s in sqlglot.parse(sql, read="duckdb") if s is not None]
-    except sqlglot.errors.ParseError as exc:
+    except sqlglot.errors.SqlglotError as exc:
+        # SQL จากโมเดลไว้ใจไม่ได้เรื่องรูปแบบ — ดักทุก exception ของ sqlglot เอง (ฐานร่วมของ
+        # ParseError และ TokenError) ไม่ใช่แค่ ParseError เคสจริงที่เจอ: ข้อความไม่ปิด ' ให้ครบ
+        # (string literal ขาดตอน) ทำให้ tokenizer โยน TokenError ซึ่งไม่ใช่ลูกของ ParseError
+        # ดักแค่ ParseError ตัวเดียวจะปล่อยให้ TokenError หลุดออกไปพัง eval ทั้งรอบ (พบจากการรัน
+        # eval จริงกับโมเดลที่เทรนได้ — โมเดลสร้าง SQL ที่ตัดกลางสตริงค่าวันที่)
         raise SqlGuardError(f"แยกวิเคราะห์ SQL ไม่ได้: {exc}") from exc
 
     if len(statements) != 1:
