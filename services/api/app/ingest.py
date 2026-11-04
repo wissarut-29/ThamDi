@@ -1,4 +1,4 @@
-"""อ่านไฟล์ที่อัปโหลด (CSV/XLSX ฯลฯ) เป็นตาราง
+"""อ่านไฟล์ที่อัปโหลด (CSV/TSV/TXT/XLSX/XLS/ODS/JSON) เป็นตาราง
 
 เจ้าของ: Suphakorn · งาน: S3, W4 · สัญญาอินเทอร์เฟซ: docs/CONTRACT.md
 
@@ -6,6 +6,7 @@
 """
 
 import io
+import json
 import re
 import unicodedata
 from pathlib import PurePath
@@ -13,7 +14,11 @@ from pathlib import PurePath
 import duckdb
 import pandas as pd
 
-ALLOWED_SUFFIXES = {".csv", ".xlsx"}
+# ไฟล์ตาราง: csv/tsv/txt = ข้อความคั่นด้วยตัวคั่น, xlsx/xls/ods = แยกตารางตาม sheet, json = รายการ object
+DELIMITED_SUFFIXES = {".csv", ".tsv", ".txt"}
+SHEET_SUFFIXES = {".xlsx", ".xls", ".ods"}
+ALLOWED_SUFFIXES = DELIMITED_SUFFIXES | SHEET_SUFFIXES | {".json"}
+ALLOWED_TEXT = ", ".join(sorted(ALLOWED_SUFFIXES))
 MAX_BYTES = 10 * 1024 * 1024
 MAX_ROWS = 200_000
 MAX_NAME_LEN = 64
@@ -77,21 +82,46 @@ def _clean(frame: pd.DataFrame) -> pd.DataFrame:
     return frame
 
 
-def _read_csv(content: bytes) -> pd.DataFrame:
-    # Excel ภาษาไทยบน Windows มักเซฟ CSV เป็น cp874 ถ้าไม่ใช่ UTF-8
-    for encoding in ("utf-8-sig", "cp874"):
+def _read_delimited(content: bytes) -> pd.DataFrame:
+    # Excel ที่บันทึกแบบ "Unicode Text" เป็น UTF-16 มี BOM นำหน้า · ถ้าไม่มี BOM ห้ามลอง utf-16
+    # เพราะไบต์ทั่วไปถอดเป็น utf-16 ได้เกือบเสมอแต่ได้ตัวอักษรขยะ
+    if content.startswith((b"\xff\xfe", b"\xfe\xff")):
+        encodings = ("utf-16",)
+    else:
+        # Excel ภาษาไทยบน Windows มักเซฟ CSV เป็น cp874 ถ้าไม่ใช่ UTF-8
+        encodings = ("utf-8-sig", "cp874")
+    for encoding in encodings:
         try:
-            return pd.read_csv(io.BytesIO(content), encoding=encoding)
+            text = content.decode(encoding)
         except UnicodeDecodeError:
             continue
-    raise IngestError("อ่านไฟล์ CSV ไม่ได้ ลองบันทึกเป็น UTF-8 ใหม่")
+        # เดาตัวคั่นจากบรรทัดหัวตาราง (, ; tab |) · ดูแค่หัวตารางเพราะในข้อมูลอาจมี 1,000 หรือ 1,5
+        # CSV จากเครื่องที่ตั้งภาษายุโรปใช้ ; · Excel "Unicode Text" ใช้ tab · ไม่เจอตัวคั่นเลยใช้ , ตามเดิม
+        header = next((line for line in text.splitlines() if line.strip()), "")
+        sep = max(",;\t|", key=header.count) if any(c in header for c in ",;\t|") else ","
+        return pd.read_csv(io.StringIO(text), sep=sep)
+    raise IngestError("อ่านไฟล์ไม่ได้ ลองบันทึกเป็น CSV แบบ UTF-8 ใหม่")
+
+
+def _read_json(content: bytes) -> pd.DataFrame:
+    data = json.loads(content.decode("utf-8-sig"))
+    # รับ [ {...}, {...} ] หรือ {"ชื่อใดก็ได้": [ {...} ]} ที่มี list อยู่ตัวเดียว
+    if isinstance(data, dict):
+        lists = [v for v in data.values() if isinstance(v, list)]
+        if len(lists) != 1:
+            raise IngestError('JSON ต้องเป็นรายการของข้อมูล เช่น [{"สาขา": "บางนา", "ยอด": 100}]')
+        data = lists[0]
+    if not isinstance(data, list) or not all(isinstance(row, dict) for row in data):
+        raise IngestError('JSON ต้องเป็นรายการของข้อมูล เช่น [{"สาขา": "บางนา", "ยอด": 100}]')
+    # object ซ้อนกันแตกเป็นคอลัมน์ เช่น ลูกค้า.ชื่อ (column_name แปลง . เป็น _ ให้ทีหลัง)
+    return pd.json_normalize(data)
 
 
 def read_upload(filename: str, content: bytes) -> dict[str, pd.DataFrame]:
-    """คืน {ชื่อตาราง: DataFrame} · CSV = 1 ตาราง, XLSX = 1 ตารางต่อ sheet ที่มีข้อมูล"""
+    """คืน {ชื่อตาราง: DataFrame} · CSV/TSV/TXT/JSON = 1 ตาราง, XLSX/XLS/ODS = 1 ตารางต่อ sheet ที่มีข้อมูล"""
     suffix = PurePath(filename or "").suffix.lower()
     if suffix not in ALLOWED_SUFFIXES:
-        raise IngestError("รองรับเฉพาะไฟล์ .csv และ .xlsx")
+        raise IngestError(f"รองรับเฉพาะไฟล์ {ALLOWED_TEXT}")
     if not content:
         raise IngestError("ไฟล์ว่าง")
     if len(content) > MAX_BYTES:
@@ -99,9 +129,13 @@ def read_upload(filename: str, content: bytes) -> dict[str, pd.DataFrame]:
 
     stem = PurePath(filename).stem
     try:
-        if suffix == ".csv":
-            raw = [(table_name(stem, "data"), _read_csv(content))]
+        if suffix in DELIMITED_SUFFIXES:
+            raw = [(table_name(stem, "data"), _read_delimited(content))]
+        elif suffix == ".json":
+            raw = [(table_name(stem, "data"), _read_json(content))]
         else:
+            # pandas ดูชนิดจากเนื้อไฟล์เอง (.xlsx = openpyxl, .xls = xlrd, .ods = odfpy)
+            # ไฟล์ .xls ที่จริงเป็น .xlsx (เปลี่ยนชื่อมา) จึงยังเปิดได้
             sheets = pd.read_excel(io.BytesIO(content), sheet_name=None)
             # เป็น list ไม่ใช่ dict: sheet "sales" กับ "Sales!" ได้ชื่อเดียวกัน ต้องไม่ทับกันก่อน dedupe
             raw = []
@@ -112,7 +146,7 @@ def read_upload(filename: str, content: bytes) -> dict[str, pd.DataFrame]:
     except pd.errors.EmptyDataError as exc:
         raise IngestError("ไฟล์ไม่มีข้อมูล") from exc
     except Exception as exc:  # ไฟล์เสีย / ไม่ใช่ไฟล์ตามนามสกุล
-        raise IngestError("เปิดไฟล์ไม่ได้ ไฟล์อาจเสียหรือไม่ใช่ CSV/XLSX จริง") from exc
+        raise IngestError(f"เปิดไฟล์ไม่ได้ ไฟล์อาจเสียหรือไม่ใช่ไฟล์ {suffix} จริง") from exc
 
     tables: dict[str, pd.DataFrame] = {}
     for name, frame in raw:

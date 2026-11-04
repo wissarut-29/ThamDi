@@ -15,7 +15,7 @@ def test_upload_and_list(api):
 
 
 def test_wrong_extension_400(api):
-    assert upload_csv(api, login(api), name="sales.txt").status_code == 400
+    assert upload_csv(api, login(api), name="sales.pdf").status_code == 400
 
 
 def test_empty_file_400(api):

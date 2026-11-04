@@ -17,7 +17,7 @@ from pathlib import Path
 
 from app import db
 from app.main import app
-from app.security import hash_password
+from app.security import hash_password, reset_rate_limits
 from fastapi.testclient import TestClient
 
 demo = Path(sys.argv[1])
@@ -28,15 +28,24 @@ with TestClient(app) as c:
     db.upsert_user("other", hash_password("other-pass"))
     tok = lambda u, p: {"Authorization": "Bearer " + c.post("/api/auth/login", json={"username": u, "password": p}).json()["token"]}
     h, h2 = tok("demo", "change-me"), tok("other", "other-pass")
-    up = lambda name, data, hh=h: c.post("/api/datasets", headers=hh, files={"file": (name, data)})
+    def up(name, data, hh=h):
+        # ล้างตัวนับ rate limit ก่อนอัปโหลดทุกครั้ง: สคริปต์นี้ทดสอบชนิดไฟล์ อัปโหลดเกิน 10 ครั้ง/นาที
+        # ที่ S-09 จำกัดไว้ (ตัว rate limit มีเทสต์ของตัวเองใน services/api/tests)
+        reset_rate_limits()
+        return c.post("/api/datasets", headers=hh, files={"file": (name, data)})
     # uploads
     ids = {}
     for f in ["sales_5_branches.xlsx", "utility_bills.csv", "employees.xlsx"]:
         r = up(f, (demo / f).read_bytes()); ids[f] = r.json().get("dataset_id")
         log(f"upload {f}", r.status_code == 201, str(r.json().get("tables")))
     r = up("ยอดขาย_cp874.csv", "สาขา,ยอดขาย\nบางนา,100\n".encode("cp874")); log("upload CSV cp874 + ชื่อไทย", r.status_code == 201, str(r.json()))
-    r = up("ข้อมูล.txt", b"a,b\n1,2\n"); log("ปฏิเสธ .txt", r.status_code == 400, r.json()["detail"])
-    r = up("old.xls", b"\xd0\xcf\x11\xe0junk"); log("ปฏิเสธ .xls", r.status_code == 400, r.json()["detail"])
+    # นามสกุลที่เพิ่ม (ingest.py รุ่นรับหลายนามสกุล)
+    r = up("ข้อมูล.txt", b"a,b\n1,2\n"); log("upload .txt คั่นด้วย ,", r.status_code == 201, str(r.json()))
+    r = up("eu.csv", "สาขา;ยอด\nบางนา;1,5\n".encode()); log("upload CSV คั่นด้วย ;", r.status_code == 201, str(r.json()))
+    r = up("unicode.txt", "สาขา\tยอด\nบางนา\t100\n".encode("utf-16")); log("upload Excel Unicode Text (UTF-16)", r.status_code == 201, str(r.json()))
+    r = up("rows.json", '[{"สาขา": "บางนา", "ยอด": 100}]'.encode()); log("upload .json", r.status_code == 201, str(r.json()))
+    r = up("report.pdf", b"%PDF-1.4"); log("ปฏิเสธ .pdf", r.status_code == 400, r.json()["detail"])
+    r = up("old.xls", b"\xd0\xcf\x11\xe0junk"); log("ปฏิเสธ .xls ที่เสีย", r.status_code == 400, r.json()["detail"])
     r = up("empty.csv", b""); log("ปฏิเสธไฟล์ว่าง", r.status_code == 400, r.json()["detail"])
     r = up("fake.xlsx", b"not a zip"); log("ปฏิเสธ xlsx ปลอม", r.status_code == 400, r.json()["detail"])
     r = up("big.csv", b"a\n" + b"1\n" * 6_000_000); log("ปฏิเสธไฟล์เกิน 10MB", r.status_code == 413, str(r.status_code))

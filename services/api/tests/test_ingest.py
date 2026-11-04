@@ -34,7 +34,13 @@ def test_duplicate_and_blank_columns():
 
 @pytest.mark.parametrize(
     ("filename", "content"),
-    [("x.txt", b"a\n1\n"), ("x.csv", b""), ("x.csv", b"a,b\n"), ("x.xlsx", b"not an excel file")],
+    [
+        ("x.pdf", b"%PDF-1.4"),
+        ("x.docx", b"PK"),
+        ("x.csv", b""),
+        ("x.csv", b"a,b\n"),
+        ("x.xlsx", b"not an excel file"),
+    ],
 )
 def test_bad_files_rejected(filename, content):
     with pytest.raises(ingest.IngestError):
@@ -88,3 +94,59 @@ def test_table_names_are_never_quoted_in_ddl(filename):
     con.execute(f'CREATE TABLE "{name}" AS SELECT * FROM x')
     ddl = con.execute("SELECT sql FROM duckdb_tables()").fetchone()[0]
     assert table_names_from_ddl(ddl) == {name}
+
+
+# ---- นามสกุลที่เพิ่ม ----
+
+
+@pytest.mark.parametrize("sep", [";", "\t", "|"])
+def test_delimiter_guessed_from_header(sep):
+    # CSV คั่นด้วย ; (เครื่องภาษายุโรป) ต้องได้ 2 คอลัมน์ ไม่ใช่คอลัมน์เดียว · ค่า 1,5 ในข้อมูลไม่ทำให้เดาผิด
+    content = f"สาขา{sep}ยอด\nบางนา{sep}1,5\n".encode()
+    assert list(ingest.read_upload("s.csv", content)["s"].columns) == ["สาขา", "ยอด"]
+
+
+def test_tsv_and_txt():
+    content = "สาขา\tยอด\nบางนา\t100\n".encode()
+    assert list(ingest.read_upload("s.tsv", content)["s"].columns) == ["สาขา", "ยอด"]
+    assert list(ingest.read_upload("s.txt", content)["s"].columns) == ["สาขา", "ยอด"]
+
+
+def test_excel_unicode_text_utf16():
+    # Excel > บันทึกเป็น > Unicode Text ได้ UTF-16 มี BOM คั่นด้วย tab
+    content = "สาขา\tยอด\nบางนา\t100\n".encode("utf-16")
+    frame = ingest.read_upload("s.txt", content)["s"]
+    assert list(frame.columns) == ["สาขา", "ยอด"]
+    assert frame.iloc[0, 0] == "บางนา"
+
+
+def test_single_column_csv_still_works():
+    assert list(ingest.read_upload("s.csv", b"a\n1\n2\n")["s"].columns) == ["a"]
+
+
+def test_json_list_and_wrapped():
+    rows = '[{"สาขา": "บางนา", "ยอด": 100, "ลูกค้า": {"ชื่อ": "ก"}}]'
+    frame = ingest.read_upload("s.json", rows.encode())["s"]
+    assert list(frame.columns) == ["สาขา", "ยอด", "ลูกค้า_ชื่อ"]
+    wrapped = '{"data": ' + rows + "}"
+    assert len(ingest.read_upload("s.json", wrapped.encode())["s"]) == 1
+
+
+@pytest.mark.parametrize("content", [b'{"a": 1}', b"[1, 2]", b"not json"])
+def test_json_not_a_table_rejected(content):
+    with pytest.raises(ingest.IngestError):
+        ingest.read_upload("s.json", content)
+
+
+@pytest.mark.parametrize("suffix", [".ods", ".xls"])
+def test_ods_and_xls(suffix):
+    if suffix == ".xls":
+        # pandas เขียน .xls ไม่ได้แล้ว ใช้ไฟล์ .xlsx ที่เปลี่ยนชื่อเป็น .xls แทน (เจอบ่อยในงานจริง)
+        buf = io.BytesIO()
+        pd.DataFrame({"a": [1]}).to_excel(buf, sheet_name="sales", index=False)
+    else:
+        pytest.importorskip("odf")
+        buf = io.BytesIO()
+        with pd.ExcelWriter(buf, engine="odf") as writer:
+            pd.DataFrame({"a": [1]}).to_excel(writer, sheet_name="sales", index=False)
+    assert list(ingest.read_upload("x" + suffix, buf.getvalue())) == ["sales"]

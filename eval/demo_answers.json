@@ -2,13 +2,98 @@
   "ยอดขายรวมทั้งปีเท่าไหร่": {
     "answer": "คำตอบ: 11,566,602",
     "status": "ok",
-    "sql": "SELECT SUM(quantity * unit_price) FROM sales LIMIT 1000",
+    "sql": "SELECT SUM(amount) FROM sales",
     "columns": [
-      "sum((quantity * unit_price))"
+      "sum(amount)"
     ],
     "rows": [
       [
         11566602
+      ]
+    ]
+  },
+  "ยอดขายรวมของสาขาบางนาเท่าไหร่": {
+    "answer": "คำตอบ: 3,068,557",
+    "status": "ok",
+    "sql": "SELECT SUM(amount) FROM sales WHERE branch = 'บางนา'",
+    "columns": [
+      "sum(amount)"
+    ],
+    "rows": [
+      [
+        3068557
+      ]
+    ]
+  },
+  "ยอดขายแต่ละหมวดสินค้าเท่าไหร่": {
+    "answer": "พบ 3 รายการ (ดูในตารางด้านล่าง)",
+    "status": "ok",
+    "sql": "SELECT category, SUM(amount) AS total FROM sales GROUP BY category ORDER BY total DESC",
+    "columns": [
+      "category",
+      "total"
+    ],
+    "rows": [
+      [
+        "อาหาร",
+        4727032
+      ],
+      [
+        "เบเกอรี่",
+        3522740
+      ],
+      [
+        "เครื่องดื่ม",
+        3316830
+      ]
+    ]
+  },
+  "ยอดขายรวมเดือนมีนาคม 2569 เท่าไหร่": {
+    "answer": "คำตอบ: 965,871",
+    "status": "ok",
+    "sql": "SELECT SUM(amount) FROM sales WHERE sale_date BETWEEN '2026-03-01' AND '2026-03-31'",
+    "columns": [
+      "sum(amount)"
+    ],
+    "rows": [
+      [
+        965871
+      ]
+    ]
+  },
+  "สินค้าที่มียอดขายรวมมากที่สุด 3 อันดับ": {
+    "answer": "พบ 3 รายการ (ดูในตารางด้านล่าง)",
+    "status": "ok",
+    "sql": "SELECT product, SUM(amount) AS total FROM sales GROUP BY product ORDER BY total DESC LIMIT 3",
+    "columns": [
+      "product",
+      "total"
+    ],
+    "rows": [
+      [
+        "สลัดอกไก่",
+        1797177
+      ],
+      [
+        "ข้าวกะเพราไก่",
+        1547775
+      ],
+      [
+        "ข้าวผัดหมู",
+        1382080
+      ]
+    ]
+  },
+  "ยอดขายรวมของสินค้ากาแฟเย็นเท่าไหร่": {
+    "answer": "คำตอบ: 1,076,515",
+    "status": "ok",
+    "sql": "SELECT SUM(amount) FROM sales WHERE product = 'กาแฟเย็น'",
+    "columns": [
+      "sum(amount)"
+    ],
+    "rows": [
+      [
+        1076515
       ]
     ]
   },

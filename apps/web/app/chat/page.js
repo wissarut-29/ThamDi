@@ -148,12 +148,12 @@ export default function ChatPage() {
           </select>
         </div>
         <form className="row" onSubmit={upload}>
-          <input type="file" ref={fileRef} accept=".csv,.xlsx" required />
+          <input type="file" ref={fileRef} accept=".csv,.tsv,.txt,.xlsx,.xls,.ods,.json" required />
           <button type="submit" disabled={uploading}>
             {uploading ? "กำลังอัปโหลด..." : "อัปโหลด"}
           </button>
         </form>
-        <p className="hint">รองรับ .csv และ .xlsx ไม่เกิน 10 MB · ระบบอ่านข้อมูลได้อย่างเดียว ไม่แก้ไฟล์ของคุณ</p>
+        <p className="hint">รองรับไฟล์ตาราง .csv .xlsx .xls .ods .tsv .txt .json ไม่เกิน 10 MB · ระบบอ่านข้อมูลได้อย่างเดียว ไม่แก้ไฟล์ของคุณ</p>
         {uploadMsg && <p className="muted">{uploadMsg}</p>}
       </section>
 

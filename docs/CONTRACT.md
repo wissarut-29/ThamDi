@@ -26,7 +26,8 @@ model_info() -> dict
 - `prompt` คือข้อความที่ `preprocess.py` สร้าง ซึ่งต้องอยู่ในรูปแบบเดียวกับตอนเทรน รูปแบบนี้ Chalakorn เป็นคนกำหนด
 - คืนผลลัพธ์ `n` แบบ (beam) เรียงจากดีที่สุดไปแย่สุด แต่ละตัวเป็น SQL หรือ `<REFUSE>` / `<CLARIFY>`
 - โหลดโมเดลครั้งเดียวตอนเริ่ม ถ้าโหลดไม่ขึ้น API ต้องยังเริ่มทำงานได้ และ `model_info()["loaded"]` ต้องเป็น `False`
-- `MODEL_BACKEND=fake` ให้คืน SQL ตายตัว เพื่อใช้เทสต์ (ส่งของ: 3 พ.ย. 11:00)
+- `MODEL_BACKEND=fake` ให้คืน SQL ตายตัว เพื่อใช้เทสต์
+- รับงานได้ทีละ 1 คำถาม ถ้ามีงานค้างอยู่ raise `ModelBusy` (router แปลงเป็น `503`) · โมเดลยังโหลดไม่เสร็จ raise `ModelNotReady`
 - `model_info()` คืน `{"name", "base_model", "version", "backend", "loaded"}`
 
 ## 2. Pipeline — `agent/pipeline.py` (Chalakorn ทำ, Suphakorn และ Wissarut ใช้)
@@ -91,11 +92,13 @@ render(question: str, result: PipelineResult) -> str
 | Method | Path | ส่ง | ได้ |
 |---|---|---|---|
 | POST | `/api/auth/login` | `{username, password}` | `{token}` |
-| POST | `/api/datasets` | ไฟล์ (multipart) | `{dataset_id, tables}` |
+| POST | `/api/datasets` | ไฟล์ตาราง `.csv` `.tsv` `.txt` `.xlsx` `.xls` `.ods` `.json` ไม่เกิน 10 MB (multipart) | `201` `{dataset_id, tables}` · ไฟล์อ่านไม่ได้ `400` · ใหญ่เกิน `413` |
 | GET | `/api/datasets` | — | `[{dataset_id, name, tables}]` |
-| POST | `/api/chat` | `{dataset_id, question}` | `{answer, status, sql, columns, rows}` |
+| POST | `/api/chat` | `{dataset_id, question}` (คำถามไม่เกิน 500 ตัวอักษร) | `{answer, status, sql, columns, rows}` · มีคำถามอื่นกำลังรัน `503` |
 | GET | `/api/model` | — | ผลของ `model_info()` |
 | GET | `/api/eval/results` | — | ดูหัวข้อ 5 |
+
+จำกัดจำนวนคำขอ: login 10 ครั้งต่อ IP, chat 20 ครั้งต่อผู้ใช้, อัปโหลด 10 ครั้งต่อผู้ใช้ ต่อนาที เกินได้ `429`
 
 ## 5. ผล eval — `eval/results/latest.json` (Wissarut ทำ, Suphakorn แสดงบนเว็บ)
 
@@ -112,7 +115,8 @@ render(question: str, result: PipelineResult) -> str
 }
 ```
 
-- `set` เป็นได้ `handwritten` (70 ข้อ) / `unseen` (ข้อใน handwritten ที่อยู่บน schema ที่โมเดลไม่เคยเห็น) / `val` (จาก Chalakorn ถ้ามี)
+- `set` เป็นได้ `handwritten` (70 ข้อ) / `unseen` (ข้อใน handwritten ที่อยู่บน schema ที่โมเดลไม่เคยเห็น) / `val` (205 ข้อ export จาก `ml/export_val.py`) / `val_unseen` (ข้อใน val บน schema ที่ไม่ได้ใช้เทรน)
+- `model` ถ้าไม่ส่ง `--model-name`/`--model-version` ให้ `eval/run.py` จะเติมจาก `model_info()` ของโมเดลที่โหลดจริง · `machine` คือ CPU + OS และชื่อ GPU ถ้ารันบน GPU
 - `execution_accuracy` = รัน SQL ของโมเดลแล้วได้ผลเหมือน SQL เฉลย (ไม่สนลำดับแถวและชื่อคอลัมน์ มีคอลัมน์เกินได้)
 - `valid_sql_rate` = สัดส่วนคำตอบที่รันได้หรือเป็น `<REFUSE>` / `<CLARIFY>`
 - `GET /api/eval/results` คืน `latest.json` (ผลจริง) ถ้ายังไม่มีคืน `404`
@@ -137,7 +141,9 @@ render(question: str, result: PipelineResult) -> str
 {"<คำถามเดโม>": {"answer": "", "status": "ok", "sql": "", "columns": [], "rows": []}}
 ```
 
-ใช้ตอน `DEMO_MODE=true` หรือตอนโมเดลโหลดไม่ขึ้น
+อ่านผ่าน `agent/demo.py`: `lookup(question: str) -> dict | None` เทียบคำถามแบบตรงตัว (ตัด whitespace หัว-ท้าย) ไม่เจอหรือไฟล์ JSON พังคืน `None`
+
+`routers/chat.py` ใช้ตอน `DEMO_MODE=true` หรือตอนโมเดลโหลดไม่ขึ้น ถ้าคำถามไม่อยู่ในไฟล์จะตอบ `status="error"` พร้อมข้อความว่าโมเดลยังไม่พร้อม
 
 ## 8. ค่าตั้ง (`.env`)
 
