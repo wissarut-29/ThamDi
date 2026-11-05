@@ -37,7 +37,10 @@ services:
     depends_on:
       - api
     ports:
-      - "3000:3000"
+      # เปิดให้เครื่องนี้เท่านั้น เหมือนพอร์ต 8000: คำขอจากเครื่องอื่นใน WiFi จะเข้ามาด้วย IP gateway ของ subnet
+      # ที่ api เชื่อ (TRUSTED_PROXIES) แล้วปลอม X-Forwarded-For หนี rate limit ได้
+      # คนอื่นเข้าผ่านลิงก์ tunnel (scripts/tunnel.sh ต่อไปที่ 127.0.0.1:3000) ไม่ต้องใช้ IP:3000
+      - "127.0.0.1:3000:3000"
     restart: unless-stopped
 
 networks:
