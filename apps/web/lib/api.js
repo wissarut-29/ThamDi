@@ -63,6 +63,7 @@ export async function api(path, { method = "GET", body, form, timeoutMs = DEFAUL
   if (body !== undefined) headers["Content-Type"] = "application/json";
 
   let res;
+  let data = null;
   try {
     res = await fetch(`${API_URL}${path}`, {
       method,
@@ -70,6 +71,13 @@ export async function api(path, { method = "GET", body, form, timeoutMs = DEFAUL
       body: form ?? (body !== undefined ? JSON.stringify(body) : undefined),
       signal: controller.signal,
     });
+    // อ่าน body ภายใต้ timeout เดียวกัน (header มาแล้วแต่ body ค้าง ก็ยังตัดตามเวลา)
+    try {
+      data = await res.json();
+    } catch (err) {
+      if (err.name === "AbortError") throw err;
+      data = null;
+    }
   } catch (err) {
     if (err.name === "AbortError") {
       throw new ApiError("เซิร์ฟเวอร์ตอบช้าเกินไป ลองใหม่อีกครั้ง", 0);
@@ -77,13 +85,6 @@ export async function api(path, { method = "GET", body, form, timeoutMs = DEFAUL
     throw new ApiError("ติดต่อเซิร์ฟเวอร์ไม่ได้ ตรวจว่า API เปิดอยู่ แล้วลองใหม่", 0);
   } finally {
     clearTimeout(timer);
-  }
-
-  let data = null;
-  try {
-    data = await res.json();
-  } catch {
-    data = null;
   }
   if (!res.ok) {
     if (res.status === 401 && path !== "/api/auth/login") setToken(null);
