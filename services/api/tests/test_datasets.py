@@ -28,3 +28,29 @@ def test_list_only_own(api):
     upload_csv(api, login(api))
     db.upsert_user("other", hash_password("other-pass"))
     assert api.get("/api/datasets", headers=login(api, "other", "other-pass")).json() == []
+
+
+def test_duplicate_upload_hidden_but_kept(api):
+    headers = login(api)
+    first = upload_csv(api, headers).json()["dataset_id"]
+    second = upload_csv(api, headers).json()["dataset_id"]
+    changed = upload_csv(api, headers, text="branch,amount\nสาขา 1,999\n").json()["dataset_id"]
+
+    by_id = {d["dataset_id"]: d for d in api.get("/api/datasets", headers=headers).json()}
+    # ชื่อเดียวกันแต่ข้อมูลต่าง = ไม่ซ้ำ · ข้อมูลเหมือนกัน = ซ่อนตัวเก่า ชี้ไปตัวใหม่สุด
+    assert "duplicate_of" not in by_id[changed]
+    assert "duplicate_of" not in by_id[second]
+    assert by_id[first]["duplicate_of"] == second
+    # ไม่ลบข้อมูล: ยังถามไฟล์เก่าได้
+    chat = {"dataset_id": first, "question": "มีกี่สาขา"}
+    assert api.post("/api/chat", headers=headers, json=chat).status_code == 200
+
+
+def test_unique_names_are_not_fingerprinted(api, monkeypatch):
+    headers = login(api)
+    upload_csv(api, headers, name="a.csv")
+    upload_csv(api, headers, name="b.csv")
+    calls = []
+    monkeypatch.setattr(db, "_dataset_fingerprint", lambda d: calls.append(d["name"]) or "x")
+    api.get("/api/datasets", headers=headers)
+    assert calls == []

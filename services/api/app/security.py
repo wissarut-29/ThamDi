@@ -3,6 +3,7 @@
 เจ้าของ: Suphakorn · งาน: S3 · สัญญาอินเทอร์เฟซ: docs/CONTRACT.md
 """
 
+import ipaddress
 import threading
 import time
 from collections import defaultdict, deque
@@ -99,20 +100,27 @@ def _check_rate(bucket: str, key: str, limit: int, window_s: float) -> None:
         hits.append(now)
 
 
-_LOOPBACK = {"127.0.0.1", "::1"}
+def _is_trusted(value: str, trusted) -> bool:
+    try:
+        ip = ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    return any(ip in net for net in trusted)
 
 
-def client_ip(request: Request) -> str:
-    """IP ของผู้ใช้ · ถ้ามาจาก proxy ในเครื่องเดียวกัน (Cloudflare tunnel → เว็บ Next.js → API)
-    ใช้ X-Forwarded-For ไม่งั้นทุกคนที่เข้าผ่านลิงก์จะนับเป็น 127.0.0.1 เดียวกัน แล้วโดน rate limit รวมกันทั้งห้อง
-    เชื่อ header นี้เฉพาะคำขอจาก loopback และเอาค่าขวาสุดที่ไม่ใช่ loopback (proxy ต่อค่าทางขวา
-    ผู้ใช้ปลอมได้แค่ค่าทางซ้าย จึงใช้ค่าแรกไม่ได้)"""
+def client_ip(request: Request, trusted=None) -> str:
+    """IP ของผู้ใช้ · ถ้ามาจาก proxy ที่เชื่อได้ (TRUSTED_PROXIES เช่น Cloudflare tunnel → เว็บ Next.js → API
+    ในเครื่องเดียวกัน หรือ container เว็บใน Docker) ใช้ X-Forwarded-For ไม่งั้นทุกคนที่เข้าผ่านลิงก์จะนับเป็น IP
+    ของ proxy เดียวกัน แล้วโดน rate limit รวมกันทั้งห้อง
+    เอาค่าขวาสุดที่ไม่ใช่ proxy ที่เชื่อได้ (proxy ต่อค่าทางขวา ผู้ใช้ปลอมได้แค่ค่าทางซ้าย จึงใช้ค่าแรกไม่ได้)"""
+    if trusted is None:
+        trusted = get_settings().trusted_proxies
     host = request.client.host if request.client else "-"
-    if host not in _LOOPBACK:
+    if not _is_trusted(host, trusted):
         return host
     hops = [h.strip() for h in request.headers.get("x-forwarded-for", "").split(",") if h.strip()]
     for hop in reversed(hops):
-        if hop not in _LOOPBACK:
+        if not _is_trusted(hop, trusted):
             return hop
     return host
 

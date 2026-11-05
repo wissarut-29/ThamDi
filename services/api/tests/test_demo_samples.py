@@ -24,7 +24,8 @@ def test_restart_does_not_duplicate_samples(tmp_path, monkeypatch):
     assert sorted(names) == ["employees.xlsx", "sales_5_branches.xlsx", "utility_bills.csv"]
 
 
-def test_new_users_do_not_get_demo_samples(api):
+def test_new_users_do_not_get_demo_samples(api, monkeypatch):
+    monkeypatch.setenv("ALLOW_REGISTER", "true")
     r = api.post("/api/auth/register", json={"username": "friend01", "password": DEMO_PASSWORD})
     assert r.status_code == 201
     headers = {"Authorization": f"Bearer {r.json()['token']}"}

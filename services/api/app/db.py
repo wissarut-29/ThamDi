@@ -221,21 +221,22 @@ def list_datasets(owner: str) -> list[dict]:
             (owner,),
         ).fetchall()
     datasets = [{**dict(r), "tables": json.loads(r["tables"])} for r in rows]
-    groups: dict[tuple[str, tuple[str, ...]], list[tuple[dict, str | None]]] = {}
+    # อ่านข้อมูลทั้งไฟล์ (fingerprint) เฉพาะกลุ่มที่ชื่อไฟล์+ชื่อตารางซ้ำกัน ไฟล์ที่ไม่ซ้ำไม่ต้องเปิดเลย
+    groups: dict[tuple[str, tuple[str, ...]], list[dict]] = {}
     for dataset in datasets:
-        key = (dataset["name"], tuple(dataset["tables"]))
-        matches = groups.setdefault(key, [])
-        if not matches:
-            matches.append((dataset, _dataset_fingerprint(dataset)))
+        groups.setdefault((dataset["name"], tuple(dataset["tables"])), []).append(dataset)
+    for members in groups.values():
+        if len(members) < 2:
             continue
-        fingerprint = _dataset_fingerprint(dataset)
-        duplicate = next(
-            (original for original, digest in matches if fingerprint and digest == fingerprint), None
-        )
-        if duplicate is not None:
-            dataset["duplicate_of"] = duplicate["dataset_id"]
-        else:
-            matches.append((dataset, fingerprint))
+        seen: dict[str, str] = {}  # fingerprint -> dataset_id ของตัวที่ใหม่สุด (ตัวที่แสดง)
+        for dataset in members:
+            fingerprint = _dataset_fingerprint(dataset)
+            if fingerprint is None:
+                continue
+            if fingerprint in seen:
+                dataset["duplicate_of"] = seen[fingerprint]
+            else:
+                seen[fingerprint] = dataset["dataset_id"]
     return datasets
 
 

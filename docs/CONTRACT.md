@@ -91,7 +91,7 @@ render(question: str, result: PipelineResult) -> str
 
 | Method | Path | ส่ง | ได้ |
 |---|---|---|---|
-| POST | `/api/auth/login` | `{username, password}` | `{token}` |
+| POST | `/api/auth/login` | `{username, password}` (ชื่อไม่สนตัวพิมพ์เล็ก/ใหญ่) | `{token}` |
 | POST | `/api/auth/register` (ไม่ต้องมี token) | `{username, password}` ชื่อ a-z 0-9 `_` `.` `-` 3–32 ตัว · รหัส 8 ตัวขึ้นไป | `201` `{token, username}` · ชื่อซ้ำ/สงวน `409` · ชื่อผิดรูป `400` · ปิดรับสมัครหรือเต็ม `403` |
 | GET | `/api/auth/config` (ไม่ต้องมี token) | — | `{allow_register}` |
 | POST | `/api/datasets` | ไฟล์ตาราง `.csv` `.tsv` `.txt` `.xlsx` `.xls` `.ods` `.json` ไม่เกิน 10 MB (multipart) | `201` `{dataset_id, tables}` · ไฟล์อ่านไม่ได้ `400` · ใหญ่เกิน `413` |
@@ -158,5 +158,5 @@ render(question: str, result: PipelineResult) -> str
 - อ่านผ่าน `app.config.get_settings()` เท่านั้น (ไม่อ่าน `os.environ` ตรง ๆ) · ค่าจาก environment ทับค่าใน `.env`
 - path ที่เป็น relative (`MODEL_PATH`, `DATA_DIR`) นับจากโฟลเดอร์บนสุดของ repo ไม่ใช่โฟลเดอร์ที่รันคำสั่ง
 - `CORS_ORIGINS` คั่นด้วย `,` · ว่าง = ไม่อนุญาต origin ไหนเลย (ไม่ใช่ `*`)
-- `ALLOW_REGISTER` (ค่าเริ่มต้น `true`) เปิดให้สมัครบัญชีเองจากหน้าเว็บ · `MAX_USERS` (ค่าเริ่มต้น 200) จำนวนบัญชีสูงสุดรวม demo
-- นับ rate limit ตาม IP: คำขอที่มาจาก proxy ในเครื่อง (127.0.0.1 เช่น Cloudflare tunnel) ใช้ IP ขวาสุดใน `X-Forwarded-For` ที่ไม่ใช่ loopback (ค่าที่ proxy ต่อท้าย ผู้ใช้ปลอมไม่ได้)
+- `ALLOW_REGISTER` (ค่าเริ่มต้น `false`) เปิดให้สมัครบัญชีเองจากหน้าเว็บ · `MAX_USERS` (ค่าเริ่มต้น 200) จำนวนบัญชีสูงสุดรวม demo
+- นับ rate limit ตาม IP: คำขอที่มาจาก proxy ใน `TRUSTED_PROXIES` (ค่าเริ่มต้น `127.0.0.1,::1` · Docker เพิ่ม subnet ของ compose) ใช้ IP ขวาสุดใน `X-Forwarded-For` ที่ไม่ใช่ loopback (ค่าที่ proxy ต่อท้าย ผู้ใช้ปลอมไม่ได้)

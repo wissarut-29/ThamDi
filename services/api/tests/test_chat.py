@@ -54,7 +54,8 @@ def test_model_not_loaded_without_demo_answer(api, monkeypatch):
     assert body["answer"] == chat.NOT_READY_TEXT
 
 
-def test_chat_rate_limited_per_user(api):
+def test_chat_rate_limited_per_user(api, monkeypatch):
+    monkeypatch.setenv("ALLOW_REGISTER", "true")
     r = api.post("/api/auth/register", json={"username": "friend01", "password": "pass-1234"})
     headers = {"Authorization": f"Bearer {r.json()['token']}"}
     dataset_id = upload_csv(api, headers).json()["dataset_id"]

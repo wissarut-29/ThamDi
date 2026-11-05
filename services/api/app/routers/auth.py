@@ -27,11 +27,13 @@ class LoginIn(BaseModel):
 
 @router.post("/login", dependencies=[Depends(limit_by_ip("login", limit=LOGIN_PER_IP))])
 def login(body: LoginIn) -> dict:
-    password_hash = db.get_password_hash(body.username)
+    # register เก็บชื่อเป็นตัวเล็กเสมอ · login ต้องแปลงแบบเดียวกัน (สมัคร Bob แล้ว login ด้วย Bob ได้)
+    username = body.username.strip().lower()
+    password_hash = db.get_password_hash(username)
     # ตอบแบบเดียวกันทั้งไม่มีผู้ใช้และรหัสผิด ไม่บอกว่ามีชื่อนี้หรือไม่
     if password_hash is None or not verify_password(body.password, password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
-    return {"token": create_token(body.username)}
+    return {"token": create_token(username)}
 
 
 USERNAME_RE = re.compile(r"^[a-z0-9_.-]{3,32}$")
