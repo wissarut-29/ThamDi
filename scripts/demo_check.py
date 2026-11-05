@@ -98,7 +98,7 @@ def main() -> int:
         print(f"API ตอบได้ใน {t_api:.1f} วินาที · DEMO_MODE ไม่รอโมเดล")
     else:
         print(f"API ตอบได้ใน {t_api:.1f} วินาที · โมเดลพร้อมใน {t_model:.1f} วินาที · {info}")
-    if not info.get("loaded"):
+    if not skip_wait and not info.get("loaded"):
         print("⚠ โมเดลยังไม่พร้อม (ดู log ของ API) · คำตอบด้านล่างจะมาจาก DEMO_MODE หรือขึ้นว่าไม่พร้อม")
 
     status, up = call("POST", "/api/datasets", token, files=(DEMO_FILE.name, DEMO_FILE.read_bytes()))
@@ -117,6 +117,9 @@ def main() -> int:
     total = time.perf_counter() - t0
     print(f"\nครบเส้นใน {total:.1f} วินาที · {'ผ่าน' if total <= WAIT_S else 'เกิน'}เป้า 5 นาที")
     print("เทียบคำตอบกับตารางใน docs/DEMO_SCRIPT.md ทุกข้อ (ดู SQL ด้วย ไม่ใช่แค่ตัวเลข)")
+    # DEMO_MODE ไม่มีโมเดลโหลดเป็นเรื่องปกติ ให้ผ่านเมื่อครบเส้นทันเป้า (ไม่อย่างนั้น exit 1 ทั้งที่ผ่าน)
+    if skip_wait:
+        return 0 if total <= WAIT_S else 1
     return 0 if info.get("loaded") else 1
 
 

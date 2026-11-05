@@ -1,6 +1,6 @@
 #!/bin/sh
 # คำสั่งประจำของโปรเจกต์ · ใช้ได้ทั้ง Git Bash บน Windows (ไม่มี make) และ macOS/Linux
-#   sh scripts/tasks.sh setup|data|test|model|dev
+#   sh scripts/tasks.sh setup|data|test|model|dev|tunnel
 # Makefile เรียกไฟล์นี้อีกที จะได้มีคำสั่งชุดเดียว
 set -eu
 
@@ -61,8 +61,12 @@ dev)
     # API อย่างเดียว · เว็บรันแยก: cd apps/web && npm run dev
     cd services/api && exec "$PYTHON" -m uvicorn app.main:app --reload --port "$PORT"
     ;;
+tunnel)
+    # ลิงก์สาธารณะผ่าน Cloudflare quick tunnel · Ctrl+C = ปิด · รายละเอียดใน docs/TUNNEL.md
+    exec sh scripts/tunnel.sh
+    ;;
 *)
-    echo "ใช้: sh scripts/tasks.sh {setup|data|test|model|dev}" >&2
+    echo "ใช้: sh scripts/tasks.sh {setup|data|test|model|dev|tunnel}" >&2
     exit 2
     ;;
 esac

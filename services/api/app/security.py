@@ -3,6 +3,7 @@
 เจ้าของ: Suphakorn · งาน: S3 · สัญญาอินเทอร์เฟซ: docs/CONTRACT.md
 """
 
+import ipaddress
 import threading
 import time
 from collections import defaultdict, deque
@@ -99,20 +100,52 @@ def _check_rate(bucket: str, key: str, limit: int, window_s: float) -> None:
         hits.append(now)
 
 
+def _is_trusted(value: str, trusted) -> bool:
+    try:
+        ip = ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    return any(ip in net for net in trusted)
+
+
+def client_ip(request: Request, trusted=None) -> str:
+    """IP ของผู้ใช้ · ถ้ามาจาก proxy ที่เชื่อได้ (TRUSTED_PROXIES เช่น Cloudflare tunnel → เว็บ Next.js → API
+    ในเครื่องเดียวกัน หรือ container เว็บใน Docker) ใช้ X-Forwarded-For ไม่งั้นทุกคนที่เข้าผ่านลิงก์จะนับเป็น IP
+    ของ proxy เดียวกัน แล้วโดน rate limit รวมกันทั้งห้อง
+    เอาค่าขวาสุดที่ไม่ใช่ proxy ที่เชื่อได้ (proxy ต่อค่าทางขวา ผู้ใช้ปลอมได้แค่ค่าทางซ้าย จึงใช้ค่าแรกไม่ได้)"""
+    if trusted is None:
+        trusted = get_settings().trusted_proxies
+    host = request.client.host if request.client else "-"
+    if not _is_trusted(host, trusted):
+        return host
+    hops = [h.strip() for h in request.headers.get("x-forwarded-for", "").split(",") if h.strip()]
+    for hop in reversed(hops):
+        if not _is_trusted(hop, trusted):
+            return hop
+    return host
+
+
 def limit_by_ip(bucket: str, limit: int, window_s: float = 60):
     """dependency: จำกัดตาม IP (ใช้กับ login กันเดารหัส)"""
 
     def dependency(request: Request) -> None:
-        _check_rate(bucket, request.client.host if request.client else "-", limit, window_s)
+        _check_rate(bucket, client_ip(request), limit, window_s)
 
     return dependency
 
 
+# บัญชี demo ใช้ร่วมกันทั้งห้องตอนเดโม จึงได้ limit ต่อผู้ใช้มากกว่าบัญชีทั่วไป
+SHARED_USERS = frozenset({"demo"})
+SHARED_MULTIPLIER = 6
+
+
 def limit_by_user(bucket: str, limit: int, window_s: float = 60):
-    """dependency: จำกัดตามผู้ใช้ (ใช้กับ chat/upload กันถามรัวจนโมเดลค้าง) · คืนชื่อผู้ใช้"""
+    """dependency: จำกัดตามผู้ใช้ (ใช้กับ chat/upload กันถามรัวจนโมเดลค้าง) · คืนชื่อผู้ใช้
+    บัญชีที่ใช้ร่วมกัน (SHARED_USERS) ได้ limit x SHARED_MULTIPLIER เช่น chat 20 → 120 ครั้ง/นาที"""
 
     def dependency(username: str = Depends(current_user)) -> str:
-        _check_rate(bucket, username, limit, window_s)
+        allowed = limit * SHARED_MULTIPLIER if username in SHARED_USERS else limit
+        _check_rate(bucket, username, allowed, window_s)
         return username
 
     return dependency

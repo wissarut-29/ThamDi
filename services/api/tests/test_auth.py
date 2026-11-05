@@ -4,6 +4,8 @@ import jwt
 import pytest
 from conftest import DEMO_PASSWORD, login, set_test_env
 
+from app.routers.auth import LOGIN_PER_IP
+
 
 def test_login_ok_and_token_works(api):
     headers = login(api)
@@ -37,10 +39,10 @@ def test_model_info(api):
 def test_login_rate_limited(api):
     codes = [
         api.post("/api/auth/login", json={"username": "demo", "password": "wrong"}).status_code
-        for _ in range(11)
+        for _ in range(LOGIN_PER_IP + 1)
     ]
-    assert codes[:10] == [401] * 10
-    assert codes[10] == 429
+    assert codes[:LOGIN_PER_IP] == [401] * LOGIN_PER_IP
+    assert codes[LOGIN_PER_IP] == 429
 
 
 def _forged_token(secret="change-me"):

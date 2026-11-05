@@ -14,6 +14,8 @@ sql_guard เสมอ ไม่ว่าโหมดจะเป็นอะไ
 from dataclasses import dataclass, field
 
 import duckdb
+import sqlglot
+from sqlglot import exp
 
 from .. import db
 from .model import generate_sql
@@ -44,6 +46,75 @@ def get_dataset(dataset_id: str) -> tuple[str, duckdb.DuckDBPyConnection]:
     return db.open_dataset(dataset_id)
 
 
+def _single_table(select: exp.Select) -> exp.Table | None:
+    """ตารางถ้า SELECT นี้อ่านจากตารางเดียว ไม่มี JOIN คืน None ถ้าไม่ใช่"""
+    from_ = select.args.get("from_") or select.args.get("from")
+    if from_ is None or select.args.get("joins") or not isinstance(from_.this, exp.Table):
+        return None
+    return from_.this
+
+
+def _required_by_where(cmp: exp.Expression, outer: exp.Select) -> bool:
+    """เงื่อนไข cmp ต้องเป็นจริงทุกแถวที่ผ่าน WHERE ของ outer หรือไม่
+
+    จริงเฉพาะเมื่อทางจาก cmp ขึ้นไปถึง WHERE ผ่านแค่ AND / วงเล็บ ถ้ามี NOT, OR, CASE
+    หรือ cmp อยู่ในรายการ SELECT แถวยังผ่านได้แม้ cmp เป็นเท็จ เช่น
+    `NOT (col > ALL (...))` ถูกต้องและได้ผลจริง (เทียบเท่า `col <= MAX(col)`)
+    """
+    node = cmp
+    while True:
+        parent = node.parent
+        if isinstance(parent, exp.Where):
+            return parent.parent is outer
+        if not isinstance(parent, (exp.And, exp.Paren)):
+            return False
+        node = parent
+
+
+def _always_empty_all_compare(sql: str) -> bool:
+    """SQL มีเงื่อนไข `col > ALL (SELECT col FROM t)` (หรือ <) บนตารางเดียวกันหรือไม่
+
+    เงื่อนไขนี้ไม่มีแถวไหนผ่านได้เลย เพราะในซับคิวรีมีค่าของแถวนั้นเองอยู่ด้วย (ไม่มีค่าไหน
+    มากกว่าตัวเอง) จึงได้ผลว่างหรือ COUNT = 0 เสมอ ไม่ว่าข้อมูลจะเป็นอะไร เคสจริง: ถาม
+    "พนักงานรายได้สูงสุดมีกี่คน" โมเดล v2 ให้ beam แรกเป็น `> ALL` (ได้ 0) แต่ beam ที่ 2 เป็น
+    `>= ALL` (ได้ 1 ซึ่งถูก) · guard ตรวจความปลอดภัย ไม่ได้ตรวจตรรกะ จึงต้องดักแยกตรงนี้ตอน
+    เลือก beam (M2/M3) · ไม่ดักถ้าซับคิวรีมี WHERE/GROUP BY/HAVING/LIMIT/JOIN เพราะแถวนอก
+    อาจไม่อยู่ในซับคิวรี ทำให้มีแถวผ่านได้จริง และไม่ดักถ้าเงื่อนไขไม่ได้บังคับทุกแถว
+    (อยู่ใต้ NOT / OR / CASE หรืออยู่ในรายการ SELECT) ดู _required_by_where()
+    """
+    try:
+        stmt = sqlglot.parse_one(sql, read="duckdb")
+    except sqlglot.errors.SqlglotError:
+        return False
+    for cmp in stmt.find_all(exp.GT, exp.LT):
+        left, right = cmp.this, cmp.expression
+        if not isinstance(left, exp.Column) or not isinstance(right, exp.All):
+            continue
+        sub = right.this
+        if isinstance(sub, exp.Subquery):
+            sub = sub.this
+        if not isinstance(sub, exp.Select) or len(sub.expressions) != 1:
+            continue
+        if any(sub.args.get(k) for k in ("where", "group", "having", "limit", "joins")):
+            continue
+        sub_col = sub.expressions[0]
+        if not isinstance(sub_col, exp.Column) or sub_col.name != left.name:
+            continue
+        sub_table = _single_table(sub)
+        outer = cmp.find_ancestor(exp.Select)
+        if sub_table is None or outer is None:
+            continue
+        outer_table = _single_table(outer)
+        if outer_table is None or outer_table.name != sub_table.name:
+            continue
+        if left.table and left.table not in (outer_table.name, outer_table.alias_or_name):
+            continue
+        if not _required_by_where(cmp, outer):
+            continue
+        return True
+    return False
+
+
 def _select_beam(
     candidates: list[str],
     mode: str,
@@ -64,6 +135,8 @@ def _select_beam(
         try:
             checked_sql = check_sql(candidate, allowed_tables)
         except SqlGuardError:
+            continue
+        if _always_empty_all_compare(checked_sql):
             continue
         if mode == "M3" and con is not None and not dry_run_executable(con, checked_sql):
             continue

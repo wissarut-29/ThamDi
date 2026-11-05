@@ -87,18 +87,24 @@ render(question: str, result: PipelineResult) -> str
 
 ## 4. HTTP API (Suphakorn ทำ ยกเว้น `/api/eval/*` ที่ Wissarut ทำ)
 
-ทุก endpoint ยกเว้น login ต้องส่ง `Authorization: Bearer <token>` ถ้าไม่มี token ให้คืน `401` ถ้าขอ dataset ของคนอื่นให้คืน `404`
+ทุก endpoint ยกเว้น login, register และ auth/config ต้องส่ง `Authorization: Bearer <token>` ถ้าไม่มี token ให้คืน `401` ถ้าขอ dataset ของคนอื่นให้คืน `404`
 
 | Method | Path | ส่ง | ได้ |
 |---|---|---|---|
-| POST | `/api/auth/login` | `{username, password}` | `{token}` |
+| POST | `/api/auth/login` | `{username, password}` (ชื่อไม่สนตัวพิมพ์เล็ก/ใหญ่) | `{token}` |
+| POST | `/api/auth/register` (ไม่ต้องมี token) | `{username, password}` ชื่อ a-z 0-9 `_` `.` `-` 3–32 ตัว · รหัส 8 ตัวขึ้นไป | `201` `{token, username}` · ชื่อซ้ำ/สงวน `409` · ชื่อผิดรูป `400` · ปิดรับสมัครหรือเต็ม `403` |
+| GET | `/api/auth/config` (ไม่ต้องมี token) | — | `{allow_register}` |
 | POST | `/api/datasets` | ไฟล์ตาราง `.csv` `.tsv` `.txt` `.xlsx` `.xls` `.ods` `.json` ไม่เกิน 10 MB (multipart) | `201` `{dataset_id, tables}` · ไฟล์อ่านไม่ได้ `400` · ใหญ่เกิน `413` |
-| GET | `/api/datasets` | — | `[{dataset_id, name, tables}]` |
+| GET | `/api/datasets` | — | `[{dataset_id, name, tables, duplicate_of?}]` · `duplicate_of` = ไฟล์ที่อัปโหลดซ้ำเนื้อหาเดียวกัน (หน้าเว็บซ่อน) |
+| GET | `/api/datasets/{dataset_id}/summary` | query ไม่บังคับ: `table` | `{name, tables, table, row_count, missing_count, duplicate_rows, column_count, columns, numeric_count, numeric_summary, charts}` · dataset ของคนอื่น `404` |
 | POST | `/api/chat` | `{dataset_id, question}` (คำถามไม่เกิน 500 ตัวอักษร) | `{answer, status, sql, columns, rows}` · มีคำถามอื่นกำลังรัน `503` |
+| GET | `/api/history` | query ไม่บังคับ: `dataset_id`, `limit` (1–200, ค่าเริ่มต้น 50) | `[{id, dataset_id, dataset_name, question, status, sql, answer, created_at}]` ของตัวเองเท่านั้น ใหม่สุดก่อน |
+| POST | `/api/export/xlsx` | `{columns, rows, question?, sql?}` (ไม่เกิน 1,000 แถว 100 คอลัมน์) | ไฟล์ `.xlsx` (ชีต "ผลลัพธ์" + "ที่มา") · ไม่รัน SQL แค่จัดรูปแบบข้อมูลที่ส่งมา · รูปแถวไม่ตรง `422` |
+| POST | `/api/export/xlsx-book` | `{sheets: [{columns, rows, question?, sql?}, ...]}` (1–30 ชีต แต่ละชีตเงื่อนไขเดียวกับ `/xlsx`) | ไฟล์ `.xlsx` ชีต "สารบัญ" + "ข้อ 1", "ข้อ 2", ... (ส่งออกทั้งบทสนทนา) · รูปแถวไม่ตรง `422` |
 | GET | `/api/model` | — | ผลของ `model_info()` |
 | GET | `/api/eval/results` | — | ดูหัวข้อ 5 |
 
-จำกัดจำนวนคำขอ: login 10 ครั้งต่อ IP, chat 20 ครั้งต่อผู้ใช้, อัปโหลด 10 ครั้งต่อผู้ใช้ ต่อนาที เกินได้ `429`
+จำกัดจำนวนคำขอ: login 50 ครั้งต่อ IP, สมัครบัญชี 50 ครั้งต่อ IP, chat 20 ครั้งต่อผู้ใช้, อัปโหลด 10 ครั้งต่อผู้ใช้, ส่งออก Excel 30 ครั้งต่อผู้ใช้ ต่อนาที เกินได้ `429` · บัญชี `demo` (ใช้ร่วมกันทั้งห้อง) ได้ x6 ของ limit ต่อผู้ใช้
 
 ## 5. ผล eval — `eval/results/latest.json` (Wissarut ทำ, Suphakorn แสดงบนเว็บ)
 
@@ -152,3 +158,5 @@ render(question: str, result: PipelineResult) -> str
 - อ่านผ่าน `app.config.get_settings()` เท่านั้น (ไม่อ่าน `os.environ` ตรง ๆ) · ค่าจาก environment ทับค่าใน `.env`
 - path ที่เป็น relative (`MODEL_PATH`, `DATA_DIR`) นับจากโฟลเดอร์บนสุดของ repo ไม่ใช่โฟลเดอร์ที่รันคำสั่ง
 - `CORS_ORIGINS` คั่นด้วย `,` · ว่าง = ไม่อนุญาต origin ไหนเลย (ไม่ใช่ `*`)
+- `ALLOW_REGISTER` (ค่าเริ่มต้น `false`) เปิดให้สมัครบัญชีเองจากหน้าเว็บ · `MAX_USERS` (ค่าเริ่มต้น 200) จำนวนบัญชีสูงสุดรวม demo
+- นับ rate limit ตาม IP: คำขอที่มาจาก proxy ใน `TRUSTED_PROXIES` (ค่าเริ่มต้น `127.0.0.1,::1` · Docker เพิ่ม subnet ของ compose) ใช้ IP ขวาสุดใน `X-Forwarded-For` ที่ไม่ใช่ loopback (ค่าที่ proxy ต่อท้าย ผู้ใช้ปลอมไม่ได้)
