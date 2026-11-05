@@ -46,12 +46,29 @@ def get_dataset(dataset_id: str) -> tuple[str, duckdb.DuckDBPyConnection]:
     return db.open_dataset(dataset_id)
 
 
-def _single_table(select: exp.Select) -> str | None:
-    """ชื่อตารางถ้า SELECT นี้อ่านจากตารางเดียว ไม่มี JOIN คืน None ถ้าไม่ใช่"""
+def _single_table(select: exp.Select) -> exp.Table | None:
+    """ตารางถ้า SELECT นี้อ่านจากตารางเดียว ไม่มี JOIN คืน None ถ้าไม่ใช่"""
     from_ = select.args.get("from_") or select.args.get("from")
     if from_ is None or select.args.get("joins") or not isinstance(from_.this, exp.Table):
         return None
-    return from_.this.name
+    return from_.this
+
+
+def _required_by_where(cmp: exp.Expression, outer: exp.Select) -> bool:
+    """เงื่อนไข cmp ต้องเป็นจริงทุกแถวที่ผ่าน WHERE ของ outer หรือไม่
+
+    จริงเฉพาะเมื่อทางจาก cmp ขึ้นไปถึง WHERE ผ่านแค่ AND / วงเล็บ ถ้ามี NOT, OR, CASE
+    หรือ cmp อยู่ในรายการ SELECT แถวยังผ่านได้แม้ cmp เป็นเท็จ เช่น
+    `NOT (col > ALL (...))` ถูกต้องและได้ผลจริง (เทียบเท่า `col <= MAX(col)`)
+    """
+    node = cmp
+    while True:
+        parent = node.parent
+        if isinstance(parent, exp.Where):
+            return parent.parent is outer
+        if not isinstance(parent, (exp.And, exp.Paren)):
+            return False
+        node = parent
 
 
 def _always_empty_all_compare(sql: str) -> bool:
@@ -62,7 +79,8 @@ def _always_empty_all_compare(sql: str) -> bool:
     "พนักงานรายได้สูงสุดมีกี่คน" โมเดล v2 ให้ beam แรกเป็น `> ALL` (ได้ 0) แต่ beam ที่ 2 เป็น
     `>= ALL` (ได้ 1 ซึ่งถูก) · guard ตรวจความปลอดภัย ไม่ได้ตรวจตรรกะ จึงต้องดักแยกตรงนี้ตอน
     เลือก beam (M2/M3) · ไม่ดักถ้าซับคิวรีมี WHERE/GROUP BY/HAVING/LIMIT/JOIN เพราะแถวนอก
-    อาจไม่อยู่ในซับคิวรี ทำให้มีแถวผ่านได้จริง
+    อาจไม่อยู่ในซับคิวรี ทำให้มีแถวผ่านได้จริง และไม่ดักถ้าเงื่อนไขไม่ได้บังคับทุกแถว
+    (อยู่ใต้ NOT / OR / CASE หรืออยู่ในรายการ SELECT) ดู _required_by_where()
     """
     try:
         stmt = sqlglot.parse_one(sql, read="duckdb")
@@ -84,10 +102,14 @@ def _always_empty_all_compare(sql: str) -> bool:
             continue
         sub_table = _single_table(sub)
         outer = cmp.find_ancestor(exp.Select)
-        if sub_table is None or outer is None or _single_table(outer) != sub_table:
+        if sub_table is None or outer is None:
             continue
-        outer_table = (outer.args.get("from_") or outer.args.get("from")).this
+        outer_table = _single_table(outer)
+        if outer_table is None or outer_table.name != sub_table.name:
+            continue
         if left.table and left.table not in (outer_table.name, outer_table.alias_or_name):
+            continue
+        if not _required_by_where(cmp, outer):
             continue
         return True
     return False
