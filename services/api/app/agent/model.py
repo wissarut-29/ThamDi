@@ -24,8 +24,9 @@ _QUESTION = re.compile(r"### คำถาม\n(.*?)\n\n### SQL", re.DOTALL)
 
 MAX_NEW_TOKENS = 160
 MAX_CONCURRENT = 1  # รันพร้อมกันได้ 1 งาน งานที่เกินรอคิว (CPU/RAM เครื่องเดโมมีจำกัด)
-# รอคิวไม่นาน: request ที่รอยึด thread ของ FastAPI ไว้ ถ้ารอนาน endpoint อื่น (login, /api/model) จะค้างตาม
-QUEUE_TIMEOUT_S = 10
+# รอคิวได้ถึง 60 วินาที (เว็บรอ /api/chat ได้ 120 วินาที) ให้หลายคนถามพร้อมกันแล้วได้คำตอบตามคิว
+# แลกกับ: คนที่รอยึด thread ของ FastAPI (~40 thread) ไว้ ถ้ารอพร้อมกันหลายสิบคน endpoint อื่นจะช้าตาม
+QUEUE_TIMEOUT_S = 60
 
 
 class ModelNotReady(RuntimeError):

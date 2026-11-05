@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     DEMO_PASSWORD: str = "change-me"
     CORS_ORIGINS: str = ""
     DATA_DIR: Path = Path("data")
+    # สมัครบัญชีเองจากหน้าเว็บ (ให้เพื่อนลองเล่นผ่านลิงก์) · ปิดได้ด้วย ALLOW_REGISTER=false
+    ALLOW_REGISTER: bool = True
+    MAX_USERS: int = 200
 
     @field_validator("MODEL_BACKEND", mode="before")
     @classmethod

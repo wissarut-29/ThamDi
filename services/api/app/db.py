@@ -5,6 +5,7 @@
 dataset หนึ่งชุด = ไฟล์ DuckDB หนึ่งไฟล์ที่ DATA_DIR/datasets/<dataset_id>.duckdb
 """
 
+import hashlib
 import json
 import re
 import sqlite3
@@ -143,6 +144,21 @@ def upsert_user(username: str, password_hash: str) -> None:
         )
 
 
+def create_user(username: str, password_hash: str) -> bool:
+    """สร้างผู้ใช้ใหม่ · ชื่อซ้ำ = False (ไม่ทับรหัสของคนเดิม ต่างจาก upsert_user)"""
+    try:
+        with closing(_app_db()) as con, con:
+            con.execute("INSERT INTO users VALUES (?, ?)", (username, password_hash))
+    except sqlite3.IntegrityError:
+        return False
+    return True
+
+
+def count_users() -> int:
+    with closing(_app_db()) as con:
+        return con.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+
+
 def delete_user(username: str) -> None:
     with closing(_app_db()) as con, con:
         con.execute("DELETE FROM users WHERE username = ?", (username,))
@@ -199,10 +215,52 @@ def get_dataset_meta(dataset_id: str) -> dict | None:
 def list_datasets(owner: str) -> list[dict]:
     with closing(_app_db()) as con:
         rows = con.execute(
-            "SELECT dataset_id, name, tables FROM datasets WHERE owner = ? ORDER BY created_at DESC",
+            # rowid ตัดสินตอนสร้างในวินาทีเดียวกัน (เช่น ไฟล์ตัวอย่างของ demo) ให้ตัวที่สร้างหลังสุดอยู่บนเสมอ
+            "SELECT dataset_id, name, tables FROM datasets WHERE owner = ? "
+            "ORDER BY created_at DESC, rowid DESC",
             (owner,),
         ).fetchall()
-    return [{**dict(r), "tables": json.loads(r["tables"])} for r in rows]
+    datasets = [{**dict(r), "tables": json.loads(r["tables"])} for r in rows]
+    groups: dict[tuple[str, tuple[str, ...]], list[tuple[dict, str | None]]] = {}
+    for dataset in datasets:
+        key = (dataset["name"], tuple(dataset["tables"]))
+        matches = groups.setdefault(key, [])
+        if not matches:
+            matches.append((dataset, _dataset_fingerprint(dataset)))
+            continue
+        fingerprint = _dataset_fingerprint(dataset)
+        duplicate = next(
+            (original for original, digest in matches if fingerprint and digest == fingerprint), None
+        )
+        if duplicate is not None:
+            dataset["duplicate_of"] = duplicate["dataset_id"]
+        else:
+            matches.append((dataset, fingerprint))
+    return datasets
+
+
+def _dataset_fingerprint(dataset: dict) -> str | None:
+    """คืน fingerprint ตาม schema และทุกแถว เพื่อซ่อนรายการอัปโหลดที่เหมือนกันโดยไม่ลบข้อมูล."""
+    try:
+        _, con = open_dataset(dataset["dataset_id"])
+    except (KeyError, duckdb.Error):
+        return None
+    digest = hashlib.sha256()
+    try:
+        for table in dataset["tables"]:
+            name = '"' + table.replace('"', '""') + '"'
+            cursor = con.execute(f"SELECT * FROM {name}")
+            schema = [(column[0], str(column[1])) for column in cursor.description]
+            digest.update(json.dumps((table, schema), ensure_ascii=False).encode("utf-8"))
+            while batch := cursor.fetchmany(4096):
+                for row in batch:
+                    digest.update(json.dumps(row, ensure_ascii=False, default=str).encode("utf-8"))
+                    digest.update(b"\n")
+    except duckdb.Error:
+        return None
+    finally:
+        con.close()
+    return digest.hexdigest()
 
 
 def add_history(
@@ -214,3 +272,21 @@ def add_history(
             "VALUES (?, ?, ?, ?, ?, ?, ?)",
             (username, dataset_id, question, status, sql, answer, _now()),
         )
+
+
+def list_history(username: str, dataset_id: str | None = None, limit: int = 50) -> list[dict]:
+    """ประวัติคำถามของผู้ใช้ ใหม่สุดก่อน · ชื่อไฟล์จากตาราง datasets (ไฟล์ถูกลบไปแล้ว = None)"""
+    sql = (
+        "SELECT h.id, h.dataset_id, d.name AS dataset_name, h.question, h.status, h.sql, h.answer, "
+        "h.created_at FROM history h LEFT JOIN datasets d ON d.dataset_id = h.dataset_id "
+        "WHERE h.username = ?"
+    )
+    params: list = [username]
+    if dataset_id is not None:
+        sql += " AND h.dataset_id = ?"
+        params.append(dataset_id)
+    sql += " ORDER BY h.id DESC LIMIT ?"
+    params.append(limit)
+    with closing(_app_db()) as con:
+        rows = con.execute(sql, params).fetchall()
+    return [dict(r) for r in rows]

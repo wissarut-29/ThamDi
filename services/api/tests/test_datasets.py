@@ -11,7 +11,9 @@ def test_upload_and_list(api):
     body = r.json()
     assert body["tables"] == ["sales"]
     listed = api.get("/api/datasets", headers=headers).json()
-    assert [d["dataset_id"] for d in listed] == [body["dataset_id"]]
+    # demo มีไฟล์ตัวอย่าง 3 ไฟล์อยู่แล้ว · ไฟล์ที่อัปโหลดล่าสุดต้องอยู่บนสุด
+    assert listed[0]["dataset_id"] == body["dataset_id"]
+    assert len(listed) == 4
 
 
 def test_wrong_extension_400(api):
