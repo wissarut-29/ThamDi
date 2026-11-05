@@ -94,3 +94,61 @@ def test_run_rejects_unsafe_sql_even_in_m0(monkeypatch):
 
     result = pipeline.run(QUESTION, "dataset-1", "M0")
     assert result.status == "error"
+
+
+EMP_SCHEMA = "CREATE TABLE employees (employee_id INTEGER, monthly_salary INTEGER, branch VARCHAR);"
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "SELECT COUNT(*) FROM employees WHERE monthly_salary > ALL (SELECT monthly_salary FROM employees)",
+        "SELECT * FROM employees e WHERE e.monthly_salary < ALL (SELECT monthly_salary FROM employees)",
+        # อยู่ใต้ AND / วงเล็บ ยังบังคับทุกแถว จึงว่างเสมอ
+        "SELECT * FROM employees WHERE branch = 'A' AND "
+        "(monthly_salary > ALL (SELECT monthly_salary FROM employees))",
+    ],
+)
+def test_always_empty_all_compare_detects_self_comparison(sql):
+    assert pipeline._always_empty_all_compare(sql)
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        # >= ALL ถูกต้อง (ได้แถวที่ค่าสูงสุด)
+        "SELECT COUNT(*) FROM employees WHERE monthly_salary >= ALL (SELECT monthly_salary FROM employees)",
+        # ซับคิวรีมี WHERE: แถวนอกอาจไม่อยู่ในซับคิวรี จึงมีแถวผ่านได้จริง
+        "SELECT * FROM employees WHERE monthly_salary > ALL "
+        "(SELECT monthly_salary FROM employees WHERE branch = 'A')",
+        # คนละคอลัมน์
+        "SELECT * FROM employees WHERE monthly_salary > ALL (SELECT employee_id FROM employees)",
+        "SELECT COUNT(*) FROM employees",
+        # ใต้ NOT: ถูกต้องและได้ผลจริง (เทียบเท่า <= MAX) จากรีวิว PR #36
+        "SELECT * FROM employees WHERE NOT (monthly_salary > ALL (SELECT monthly_salary FROM employees))",
+        # ใต้ OR: แถวผ่านได้จากอีกเงื่อนไข
+        "SELECT * FROM employees WHERE branch = 'A' OR "
+        "monthly_salary > ALL (SELECT monthly_salary FROM employees)",
+        # อยู่ในรายการ SELECT ไม่ใช่เงื่อนไขกรองแถว
+        "SELECT monthly_salary > ALL (SELECT monthly_salary FROM employees) AS is_top FROM employees",
+    ],
+)
+def test_always_empty_all_compare_keeps_valid_sql(sql):
+    assert not pipeline._always_empty_all_compare(sql)
+
+
+def test_run_m3_skips_self_all_beam_and_uses_next(monkeypatch):
+    con = duckdb.connect(":memory:")
+    con.execute(EMP_SCHEMA)
+    con.execute("INSERT INTO employees VALUES (1, 15000, 'A'), (2, 35000, 'B'), (3, 20000, 'A')")
+    beams = [
+        "SELECT COUNT(*) FROM employees WHERE monthly_salary > ALL (SELECT monthly_salary FROM employees)",
+        "SELECT COUNT(*) FROM employees WHERE monthly_salary >= ALL (SELECT monthly_salary FROM employees)",
+    ]
+    monkeypatch.setattr(pipeline, "get_dataset", lambda dataset_id: (EMP_SCHEMA, con))
+    monkeypatch.setattr(pipeline, "generate_sql", lambda prompt, n: beams)
+
+    result = pipeline.run("พนักงานรายได้สูงสุดมีกี่คน", "dataset-1", "M3")
+    assert result.status == "ok"
+    assert ">=" in result.sql
+    assert result.rows == [[1]]
