@@ -53,7 +53,9 @@ with tempfile.TemporaryDirectory(dir=dest.parent) as tmp:
 PY
     rm -f "$tmp"
     [ -f "$dest/config.json" ] || { echo "ไม่พบ $dest/config.json หลังแตกไฟล์ — zip ไม่ใช่โฟลเดอร์โมเดล HF" >&2; exit 1; }
-    echo "โมเดลอยู่ที่ $dest แล้ว · ตั้ง MODEL_BACKEND=local ใน .env เพื่อใช้"
+    # หน้า "เกี่ยวกับโมเดล" อ่านเวอร์ชันจากไฟล์นี้ · zip จาก Drive ไม่มีไฟล์นี้มาให้
+    [ -f "$dest/VERSION" ] || echo "${MODEL_VERSION:-v2}" > "$dest/VERSION"
+    echo "โมเดล $(cat "$dest/VERSION") อยู่ที่ $dest แล้ว · ตั้ง MODEL_BACKEND=local ใน .env เพื่อใช้"
     ;;
 dev)
     # API อย่างเดียว · เว็บรันแยก: cd apps/web && npm run dev

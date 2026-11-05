@@ -2,7 +2,9 @@
 
 ใช้บนโน้ตบุ๊กวันสอบ หลังเริ่ม API (ทาง Docker หรือรันตรง) — เปิดสคริปต์นี้ทันทีหลังสั่งเริ่ม API:
 
-    API_URL=http://localhost:8000 DEMO_PASSWORD=<รหัสใน .env> python scripts/demo_check.py
+    API_URL=http://127.0.0.1:8000 DEMO_PASSWORD=<รหัสใน .env> python scripts/demo_check.py
+
+ซ้อมแผนสำรอง (API ตั้ง DEMO_MODE=true ไม่มีโมเดล) ใส่ DEMO_MODE=true หน้าคำสั่งด้วย สคริปต์จะไม่รอโมเดล
 
 ต้องมี data/demo/sales_5_branches.xlsx (สร้างด้วย python scripts/make_demo_files.py)
 ใช้แค่ไลบรารีมาตรฐานของ Python ไม่ต้องติดตั้งอะไรเพิ่ม · ผลที่คาดไว้ดู docs/DEMO_SCRIPT.md
@@ -17,7 +19,8 @@ import urllib.request
 import uuid
 from pathlib import Path
 
-API_URL = os.environ.get("API_URL", "http://localhost:8000").rstrip("/")
+# 127.0.0.1 ไม่ใช่ localhost: บน Windows urllib ลอง IPv6 ก่อน ช้าขึ้น ~2 วินาทีต่อคำขอ ทำให้เวลาที่วัดเพี้ยน
+API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000").rstrip("/")
 PASSWORD = os.environ.get("DEMO_PASSWORD", "")
 DEMO_FILE = Path(__file__).resolve().parents[1] / "data" / "demo" / "sales_5_branches.xlsx"
 WAIT_S = 300  # เป้า S6: ใช้ได้ครบเส้นใน 5 นาที
@@ -83,13 +86,18 @@ def main() -> int:
     t_api = time.perf_counter() - t0
 
     info = {}
-    while time.perf_counter() - t0 < WAIT_S:
+    # DEMO_MODE (แผนสำรอง ไม่มีโมเดล) ไม่ต้องรอโมเดล ไม่อย่างนั้นรอครบ 5 นาทีแล้วขึ้น "เกินเป้า"
+    skip_wait = os.environ.get("DEMO_MODE", "").lower() == "true"
+    while not skip_wait and time.perf_counter() - t0 < WAIT_S:
         _, info = call("GET", "/api/model", token)
         if info.get("loaded"):
             break
         time.sleep(1)
     t_model = time.perf_counter() - t0
-    print(f"API ตอบได้ใน {t_api:.1f} วินาที · โมเดลพร้อมใน {t_model:.1f} วินาที · {info}")
+    if skip_wait:
+        print(f"API ตอบได้ใน {t_api:.1f} วินาที · DEMO_MODE ไม่รอโมเดล")
+    else:
+        print(f"API ตอบได้ใน {t_api:.1f} วินาที · โมเดลพร้อมใน {t_model:.1f} วินาที · {info}")
     if not info.get("loaded"):
         print("⚠ โมเดลยังไม่พร้อม (ดู log ของ API) · คำตอบด้านล่างจะมาจาก DEMO_MODE หรือขึ้นว่าไม่พร้อม")
 
