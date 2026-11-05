@@ -59,6 +59,26 @@ def test_model_info_has_all_keys():
     assert info["loaded"] is True
 
 
+def test_local_info_without_name_or_path(monkeypatch, tmp_path):
+    # transformers 5 ไม่เขียน _name_or_path ลง config.json ตอน export → หน้าเว็บเคยขึ้น "-"
+    (tmp_path / "config.json").write_text('{"architectures": ["Qwen2ForCausalLM"]}', encoding="utf-8")
+    (tmp_path / "VERSION").write_text("v2\n", encoding="utf-8")
+    monkeypatch.setenv("MODEL_BACKEND", "local")
+    monkeypatch.setenv("MODEL_PATH", str(tmp_path))
+    info = model.model_info()
+    assert info["base_model"] == model.DEFAULT_BASE_MODEL
+    assert info["version"] == "v2"
+
+
+def test_local_info_without_model_files(monkeypatch, tmp_path):
+    # ไม่มีไฟล์โมเดล → ไม่เดาชื่อโมเดลตั้งต้น
+    monkeypatch.setenv("MODEL_BACKEND", "local")
+    monkeypatch.setenv("MODEL_PATH", str(tmp_path / "missing"))
+    info = model.model_info()
+    assert info["base_model"] == ""
+    assert info["version"] == ""
+
+
 def test_unknown_backend_raises(monkeypatch):
     monkeypatch.setenv("MODEL_BACKEND", "bogus")
     with pytest.raises(ValueError):
