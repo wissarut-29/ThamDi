@@ -17,9 +17,10 @@
 > ✅ **คำถามเดโมชุดใหม่** ใน [DEMO_SCRIPT.md](DEMO_SCRIPT.md) ถูกครบ 7/7 (#30) · **พิมพ์คำถามให้ตรงตัวอักษร**
 > ✅ **PR #27 แก้ครบตามรีวิวรอบ 5 แล้ว** (`16101c5`): `demo_answers.json` ชุดใหม่ 7 ข้อตรงตัวอักษร · ISSUES ข้อ 8/14 · MODEL_CARD 148.2 นาที / Tesla T4 · sync กับ `dev` แล้ว · Wissarut ลองรวมกับ `dev` ในเครื่อง: pytest 152 ผ่าน · `--check-gold` ผ่าน · CI 4 job เขียว → **merge แล้ว** (`5daa5df`)
 > ✅ **W5 · W6 ภาพหน้าจอ · W7 สไลด์ + คลิปสำรอง เสร็จแล้ว** (5 พ.ย.) · คลิปสำรองอยู่ใน GitHub Release `v1.0`
+> ✅ **#34 merge แล้ว** (`cb6ec8b`): หน้า "เกี่ยวกับโมเดล" แสดง `Qwen/Qwen2.5-0.5B-Instruct` / `v2` · `demo_check.py` ซ้อม DEMO_MODE ได้ (7/7) · ⚠️ เครื่องที่ลงโมเดลไว้แล้วรัน `echo v2 > models/thamdi/VERSION` 1 ครั้ง
 > ⏭️ **ลำดับที่เหลือ:** Suphakorn ซ้อมบนโน้ตบุ๊กวันสอบ · ทุกคนซ้อมนำเสนอ 2 รอบ
 
-**สถานะ branch (5 พ.ย.):** `feat/chalakorn` merge เข้า `dev` แล้ว (#27) · `feat/suphakorn` ตามหลัง `dev` 3 commit (ไม่มีงานค้าง — `git pull origin dev` ก่อนเริ่มงานใหม่) · `feat/wissarut` sync กับ `dev` แล้ว · tag `v1.0` แล้ว
+**สถานะ branch (5 พ.ย.):** `feat/chalakorn` merge เข้า `dev` แล้ว (#27) · `feat/suphakorn` merge เข้า `dev` แล้ว (#34) · `feat/wissarut` sync กับ `dev` แล้ว · `dev` → `main` หลัง #34
 
 #### 🔵 Chalakorn (@fffalafair)
 - ✅ C1 ไม่มี Groq/Gemini · ✅ C2 โมเดล v1 · ✅ C3 pipeline M0–M3 · ✅ `get_dataset()` จริง (#18)
@@ -34,10 +35,10 @@
 - ✅ S1–S4 · ✅ ลบตัวเสียบ `get_dataset` (#19) · ✅ รับ .xls .ods .tsv .txt .json (#22)
 - ✅ S6 ซ้อมบนเครื่องพัฒนาด้วย v2 ถูก 7/7 ครบเส้น 23 วินาที · ✅ `scripts/demo_check.py` · ✅ เช็กลิสต์เช้าวันสอบ (#29)
 - ❌ **S6 ซ้อมบนโน้ตบุ๊กวันสอบจริง** ด้วย `demo_check.py` (ลอง Docker ก่อน) → จดเวลา/RAM ใน RUNBOOK · ตั้ง `JWT_SECRET`, `DEMO_PASSWORD` ใหม่ · ลองตัดเน็ต
-- ❌ (#27 merge แล้ว ทำได้เลย) เช็ก `DEMO_MODE=true` ตอบคำถามเดโมได้ครบ 7 ข้อ
+- ✅ เช็ก `DEMO_MODE=true` ตอบคำถามเดโมได้ครบ 7 ข้อ (บนเครื่องพัฒนา #34)
 - ✅ S5 หน้าผลการทดสอบแสดง `latest.json` จริงครบ 4 ชุด (Wissarut เช็กบนเว็บแล้ว ดู `docs/screenshots/07_model_results.png`)
-- ❌ หน้า "เกี่ยวกับโมเดล" ช่อง "โมเดลตั้งต้น" และ "เวอร์ชัน" ยังขึ้น `-` (ควรเป็น Qwen2.5-0.5B-Instruct / v2)
-- ❌ อัปเดต `feat/suphakorn` จาก `dev` (ตามหลัง 3 commit)
+- ✅ หน้า "เกี่ยวกับโมเดล" แสดงโมเดลตั้งต้นและเวอร์ชัน (#34)
+- ✅ อัปเดต `feat/suphakorn` จาก `dev`
 - ❌ ซ้อมเดโมสด + ส่วน "สถาปัตยกรรม · ความปลอดภัย" 2 รอบ
 
 #### 🟢 Wissarut (@wissarut-29)
@@ -50,6 +51,8 @@
 - ✅ W7 สไลด์ 14 หน้า แบ่งคนพูดใน speaker notes (หน้า 12 ข้อจำกัด มี "ยังไม่รับ PDF, Word, รูปภาพ")
 - ✅ W7 คลิปเดโมสำรอง: ถามคำถามเดโม 7 ข้อกับโมเดล v2 จริง ถูก 7/7 → แนบใน GitHub Release `v1.0`
 - ✅ `dev` → `main` + tag `v1.0`
+- ✅ รีวิว/merge #34 · แท็กงานที่เหลือใน #10, #14, #34 · ภาพ `02_chat_empty` (#33) · `dev` → `main` หลัง #34
+- ❌ ซ้อมนำเสนอ 2 รอบ
 
 ---
 

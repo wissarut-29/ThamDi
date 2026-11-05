@@ -46,3 +46,6 @@ build/
 Thumbs.db
 .vscode/
 .idea/
+
+# คลิปเดโมสำรอง (อยู่ใน GitHub Release v1.0 แล้ว ไม่เก็บใน repo)
+docs/demo/
