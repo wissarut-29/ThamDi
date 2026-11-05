@@ -1,4 +1,4 @@
-# รันทั้งระบบ: docker compose up --build  → เว็บ http://localhost:3000 · API http://localhost:8000
+# รันทั้งระบบ: docker compose up --build  → เว็บ http://localhost:3000 (เรียก API ผ่าน /api ของเว็บ) · API ตรง http://localhost:8000
 # ค่าตั้งมาจาก .env (คัดลอกจาก .env.example) · โมเดลจริง: make model แล้วตั้ง MODEL_BACKEND=local
 # และ build ด้วย INSTALL_MODEL=1 (ดู docs/RUNBOOK.md)
 services:
@@ -26,7 +26,9 @@ services:
     build:
       context: apps/web
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        # ว่าง = browser เรียก /api ของเว็บ (พอร์ต 3000 พอร์ตเดียว เปิดผ่าน Tailscale Funnel ได้)
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+        API_INTERNAL_URL: http://api:8000
     depends_on:
       - api
     ports:

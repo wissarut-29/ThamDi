@@ -1,6 +1,8 @@
 // เรียก API ตาม docs/CONTRACT.md หัวข้อ 4 · ทุก request มี timeout ไม่ให้หน้าเว็บค้างเมื่อ API ล่ม/ช้า
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+// ว่าง = เรียก /api ของเว็บเอง แล้ว next.config.mjs ส่งต่อไปที่ API (ใช้ผ่านลิงก์ tunnel ได้)
+// ตั้ง NEXT_PUBLIC_API_URL เมื่ออยากให้ browser เรียก API ตรง ๆ (ต้องตั้ง CORS_ORIGINS ให้ตรงด้วย)
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 
 const TOKEN_KEY = "thamdi_token";
 const DEFAULT_TIMEOUT_MS = 15000;
@@ -28,6 +30,21 @@ export function setToken(token) {
     else sessionStorage.removeItem(TOKEN_KEY);
   } catch {
     // private mode: ใช้ต่อได้แต่ต้อง login ใหม่ทุกครั้งที่รีเฟรช
+  }
+}
+
+// ชื่อผู้ใช้จาก token (sub ใน JWT) · ใช้แยกข้อมูลในเบราว์เซอร์ของแต่ละบัญชี ไม่ได้ใช้ตรวจสิทธิ์
+export function currentUser() {
+  const token = getToken();
+  if (!token) return null;
+  try {
+    const part = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const json = decodeURIComponent(
+      [...atob(part)].map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0")).join(""),
+    );
+    return JSON.parse(json).sub || null;
+  } catch {
+    return null;
   }
 }
 
