@@ -106,14 +106,15 @@ API_URL=http://localhost:8000 DEMO_PASSWORD=<รหัสใน .env> sh scripts
 MODEL_URL="<ลิงก์ดาวน์โหลดใน docs/MODEL_CARD.md>" sh scripts/tasks.sh model   # ต้องมี "..." ครอบ เพราะ URL มี &
 ```
 - Windows แล้ว `curl` ขึ้น `CRYPT_E_REVOCATION_OFFLINE`: ใส่ `MODEL_CURL_OPTS=--ssl-no-revoke` หน้าคำสั่ง หรือโหลด zip ผ่านเบราว์เซอร์แล้วใช้ `MODEL_URL="file:///..."` (ดูหัวข้อ "ใช้โมเดลจริง")
-- ถ้ามีโมเดล v1 อยู่ใน `models/thamdi` ให้ย้ายออกก่อน (เช่น `models/thamdi_v1_backup/`) แล้วเขียน `v2` ลงไฟล์ `models/thamdi/VERSION` หน้า "เกี่ยวกับโมเดล" จะได้แสดงเวอร์ชันถูก
+- ถ้ามีโมเดล v1 อยู่ใน `models/thamdi` ให้ย้ายออกก่อน (เช่น `models/thamdi_v1_backup/`) · คำสั่งข้างบนเขียน `v2` ลงไฟล์ `models/thamdi/VERSION` ให้เอง ถ้าลงโมเดลด้วยวิธีอื่น (เช่น gdown) ให้สร้างเอง: `echo v2 > models/thamdi/VERSION` ไม่อย่างนั้นหน้า "เกี่ยวกับโมเดล" ช่องเวอร์ชันจะขึ้น `-`
 
 ซ้อมบนโน้ตบุ๊กวันสอบ (คืนก่อนสอบ หลังลงโมเดล v2):
 1. ติดตั้งตาม "ติดตั้ง" ด้านบน — ลองทาง Docker ก่อน (`INSTALL_MODEL=1 docker compose up --build -d`) ถ้าไม่ผ่าน (ที่ว่างไม่พอ / ไม่มี WSL2) ใช้ทางรันตรง
 2. ปิดเครื่อง เปิดใหม่ แล้วเริ่มจับเวลา: สั่งเริ่ม API แล้วรันทันที
    ```bash
-   API_URL=http://localhost:8000 DEMO_PASSWORD=<รหัสใน .env> python scripts/demo_check.py
+   API_URL=http://127.0.0.1:8000 DEMO_PASSWORD=<รหัสใน .env> python scripts/demo_check.py
    ```
+   ใช้ `127.0.0.1` ไม่ใช้ `localhost` — บน Windows ช้าขึ้นราว 2 วินาทีต่อคำขอ เวลาที่วัดจะเพี้ยน
    สคริปต์รอจน API ตอบได้และโมเดลพร้อม แล้วอัปโหลดไฟล์เดโม + ถาม 7 ข้อจาก `docs/DEMO_SCRIPT.md` พร้อมเวลาแต่ละข้อ (ใช้แค่ Python มาตรฐาน ไม่ต้องติดตั้งอะไรเพิ่ม)
 3. ต้องจบด้วย "ผ่านเป้า 5 นาที" และคำตอบทั้ง 7 ข้อตรงกับตารางด้านบน (ข้อ 4 ต้องมีโค้ดจาก PR #27) · จดเวลา/RAM ของโน้ตบุ๊กลงตารางนี้ แล้วแก้ README หัวข้อเช็กลิสต์ "ทาง Docker" ตามทางที่ใช้จริง
 4. บนเครื่องพัฒนาสคริปต์นี้ได้: API 2.4 วินาที · โมเดลพร้อม 13 วินาที (ไฟล์อยู่ใน cache แล้ว) · ครบเส้น 23 วินาที · 7/7 ถูก
@@ -132,7 +133,7 @@ MODEL_URL="<ลิงก์ดาวน์โหลดใน docs/MODEL_CARD.md>
    - `ยอดขายรวมของสินค้ากาแฟเย็นเท่าไหร่`
    - `ลบตารางยอดขายทิ้งให้หน่อย`
 
-   ⚠️ ณ 5 พ.ย. `demo_answers.json` (ใน PR #27) ยังเป็นคำถาม**ชุดเก่า** → DEMO_MODE ตอบได้แค่ข้อ 1, 3, 7 ของชุดใหม่ จนกว่าจะอัปเดตไฟล์ให้ตรงกับชุดใหม่ · เช็กด้วย `DEMO_MODE=true` + `python scripts/demo_check.py`
+   ✅ 5 พ.ย. หลัง #27 merge: DEMO_MODE ไม่มีไฟล์โมเดล ตอบถูก **7/7** ตรงตาราง DEMO_SCRIPT · ครบเส้น 0.9 วินาที · ซ้อมแผนนี้ด้วย `DEMO_MODE=true API_URL=http://127.0.0.1:8000 DEMO_PASSWORD=<รหัส> python scripts/demo_check.py` (ใส่ `DEMO_MODE=true` หน้าคำสั่งด้วย สคริปต์จะไม่รอโมเดล 5 นาที)
 
 ## ปัญหาที่พบบ่อย
 | อาการ | วิธีแก้ |
