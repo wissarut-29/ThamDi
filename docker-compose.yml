@@ -1,4 +1,4 @@
-# รันทั้งระบบ: docker compose up --build  → เว็บ http://localhost:3000 · API http://localhost:8000
+# รันทั้งระบบ: docker compose up --build  → เว็บ http://localhost:3000 (เรียก API ผ่าน /api ของเว็บ) · API ตรง http://localhost:8000
 # ค่าตั้งมาจาก .env (คัดลอกจาก .env.example) · โมเดลจริง: make model แล้วตั้ง MODEL_BACKEND=local
 # และ build ด้วย INSTALL_MODEL=1 (ดู docs/RUNBOOK.md)
 services:
@@ -13,22 +13,38 @@ services:
       # path ใน container (relative นับจาก /app)
       DATA_DIR: data
       MODEL_PATH: models/thamdi
+      # คำขอจากเว็บมาจาก container web (subnet ด้านล่าง) ไม่ใช่ 127.0.0.1 → เชื่อ X-Forwarded-For จาก subnet นี้
+      # ไม่งั้นทุกคนที่เข้าผ่านลิงก์นับเป็น IP เดียวกันใน rate limit
+      TRUSTED_PROXIES: 127.0.0.1,::1,172.31.250.0/24
     volumes:
       - ./data:/app/data
       - ./models:/app/models:ro
       # ทั้งโฟลเดอร์ eval: routers/eval.py อ่าน eval/results/ และ demo.lookup() อ่าน eval/demo_answers.json (DEMO_MODE)
       - ./eval:/app/eval:ro
     ports:
-      - "8000:8000"
+      # เปิดให้เครื่องนี้เท่านั้น: คนใน WiFi เดียวกันเรียก API ตรงไม่ได้ (ต้องผ่านเว็บ :3000)
+      # จึงปลอม X-Forwarded-For ผ่าน gateway ของ subnet ที่เชื่อไว้ไม่ได้
+      - "127.0.0.1:8000:8000"
     restart: unless-stopped
 
   web:
     build:
       context: apps/web
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        # ว่าง = browser เรียก /api ของเว็บ (พอร์ต 3000 พอร์ตเดียว เปิดผ่าน Cloudflare quick tunnel ได้)
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+        API_INTERNAL_URL: http://api:8000
     depends_on:
       - api
     ports:
-      - "3000:3000"
+      # เปิดให้เครื่องนี้เท่านั้น เหมือนพอร์ต 8000: คำขอจากเครื่องอื่นใน WiFi จะเข้ามาด้วย IP gateway ของ subnet
+      # ที่ api เชื่อ (TRUSTED_PROXIES) แล้วปลอม X-Forwarded-For หนี rate limit ได้
+      # คนอื่นเข้าผ่านลิงก์ tunnel (scripts/tunnel.sh ต่อไปที่ 127.0.0.1:3000) ไม่ต้องใช้ IP:3000
+      - "127.0.0.1:3000:3000"
     restart: unless-stopped
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.31.250.0/24 # ต้องตรงกับ TRUSTED_PROXIES ของ api

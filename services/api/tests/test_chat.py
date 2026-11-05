@@ -54,12 +54,26 @@ def test_model_not_loaded_without_demo_answer(api, monkeypatch):
     assert body["answer"] == chat.NOT_READY_TEXT
 
 
-def test_chat_rate_limited_per_user(api):
-    headers = login(api)
+def test_chat_rate_limited_per_user(api, monkeypatch):
+    monkeypatch.setenv("ALLOW_REGISTER", "true")
+    r = api.post("/api/auth/register", json={"username": "friend01", "password": "pass-1234"})
+    headers = {"Authorization": f"Bearer {r.json()['token']}"}
     dataset_id = upload_csv(api, headers).json()["dataset_id"]
     codes = [ask(api, headers, dataset_id, "มีกี่สาขา").status_code for _ in range(21)]
     assert codes[:20] == [200] * 20
     assert codes[20] == 429
+
+
+def test_shared_demo_account_gets_bigger_limit(api):
+    # ทั้งห้องใช้ demo ร่วมกันตอนเดโม: 20 x 6 = 120 ครั้ง/นาที
+    from app.security import SHARED_MULTIPLIER
+
+    headers = login(api)
+    dataset_id = upload_csv(api, headers).json()["dataset_id"]
+    limit = 20 * SHARED_MULTIPLIER
+    codes = [ask(api, headers, dataset_id, "มีกี่สาขา").status_code for _ in range(limit + 1)]
+    assert codes[:limit] == [200] * limit
+    assert codes[limit] == 429
 
 
 def test_demo_answer_with_missing_keys_does_not_500(api, monkeypatch):

@@ -3,6 +3,7 @@
 เจ้าของ: Suphakorn · งาน: S1 · สัญญาอินเทอร์เฟซ: docs/CONTRACT.md หัวข้อ 8
 """
 
+import ipaddress
 import logging
 import os
 import secrets
@@ -35,6 +36,12 @@ class Settings(BaseSettings):
     DEMO_PASSWORD: str = "change-me"
     CORS_ORIGINS: str = ""
     DATA_DIR: Path = Path("data")
+    # สมัครบัญชีเองจากหน้าเว็บ · ค่าเริ่มต้นปิด เปิดด้วย ALLOW_REGISTER=true เฉพาะตอนจะแชร์ลิงก์ให้คนในห้อง
+    ALLOW_REGISTER: bool = False
+    MAX_USERS: int = 200
+    # proxy ที่เชื่อ X-Forwarded-For ได้ (IP หรือ subnet คั่นด้วย ,) · ค่าเริ่มต้น = เครื่องตัวเอง (รันตรง)
+    # Docker ใส่ subnet ของ network compose เพิ่ม (ดู docker-compose.yml)
+    TRUSTED_PROXIES: str = "127.0.0.1,::1"
 
     @field_validator("MODEL_BACKEND", mode="before")
     @classmethod
@@ -60,6 +67,19 @@ class Settings(BaseSettings):
         if not password:
             return False
         return not (self.MODEL_BACKEND == "local" and password in _PLACEHOLDER_SECRETS)
+
+    @property
+    def trusted_proxies(self) -> tuple:
+        nets = []
+        for item in self.TRUSTED_PROXIES.split(","):
+            item = item.strip()
+            if not item:
+                continue
+            try:
+                nets.append(ipaddress.ip_network(item, strict=False))
+            except ValueError:
+                log.warning("TRUSTED_PROXIES มีค่าที่ไม่ใช่ IP/subnet: %s (ข้าม)", item)
+        return tuple(nets)
 
     @property
     def cors_origins(self) -> list[str]:
