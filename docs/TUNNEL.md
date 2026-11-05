@@ -1,31 +1,25 @@
-# เปิด ThamDi ให้คนในห้องลองผ่านลิงก์ (Tailscale Funnel)
+# เปิด ThamDi ให้คนในห้องลองผ่านลิงก์ (Cloudflare quick tunnel)
 
 เจ้าของ: Suphakorn · ใช้กับเครื่องที่จะเป็น**แม่ข่าย** (เครื่องที่รัน API + เว็บ + โมเดล) · คนอื่นเปิดลิงก์จากมือถือ/โน้ตบุ๊กได้เลย ไม่ต้องลงอะไร ไม่ต้องอยู่ WiFi เดียวกัน
 
-ได้ลิงก์แบบ `https://<ชื่อเครื่อง>.<ชื่อ tailnet>.ts.net` · **ลิงก์เดิมทุกครั้ง** (ไม่เปลี่ยนเมื่อรีสตาร์ต) ทำ QR code หรือพิมพ์ลงสไลด์ล่วงหน้าได้
+ได้ลิงก์แบบ `https://<คำสุ่ม>.trycloudflare.com` · ไม่ต้องสมัครบัญชี Cloudflare ไม่ต้องเปิดพอร์ตเราเตอร์ · **ลิงก์เปลี่ยนทุกครั้งที่รันใหม่** → ทำ QR code ตอนเปิดลิงก์แล้ว ไม่ใช่พิมพ์ลงสไลด์ล่วงหน้า
 
-> ทำคืนก่อนสอบ ไม่ใช่ในห้อง · ขั้นที่ 1–2 ทำครั้งเดียวต่อเครื่อง
+> ข้อจำกัดของ quick tunnel (ฟรี ไม่มีบัญชี): คำขอที่ค้างเกิน 100 วินาทีถูกตัด (คำถามรอคิวได้ 60 วินาทีจึงไม่ถึง) · รับคำขอพร้อมกันได้ราว 200 · ไม่มีการรับประกัน uptime เหมาะกับเดโมในห้อง ไม่ใช่ใช้งานจริง
 
-## 1. ติดตั้ง Tailscale และ login (ครั้งเดียว)
+## 1. ติดตั้ง cloudflared (ครั้งเดียว)
 
-1. โหลดจาก https://tailscale.com/download แล้วติดตั้ง
-2. เปิด Tailscale จากถาด (มุมขวาล่าง) → **Log in** → ใช้บัญชี Google/GitHub/Microsoft ของเจ้าของเครื่อง
-3. ตั้งชื่อเครื่องให้สั้น (ชื่อนี้อยู่ในลิงก์): เข้า https://login.tailscale.com/admin/machines → เครื่องนี้ → `...` → **Edit machine name** เช่น `thamdi`
-4. เช็กใน Git Bash:
-   ```bash
-   "/c/Program Files/Tailscale/tailscale.exe" status
-   ```
-   ต้องเห็นชื่อเครื่องและ IP `100.x.x.x`
-
-## 2. เปิด Funnel ให้ tailnet (ครั้งเดียว)
-
-รันขั้นที่ 4 ครั้งแรก คำสั่งจะขึ้นประมาณนี้แล้วรอ:
+```bash
+winget install --id Cloudflare.cloudflared
 ```
-Funnel is not enabled on your tailnet.
-To enable, visit:
-         https://login.tailscale.com/f/funnel?node=...
+หรือโหลด `.msi` จาก https://github.com/cloudflare/cloudflared/releases · เช็กใน Git Bash:
+```bash
+"/c/Program Files (x86)/cloudflared/cloudflared.exe" --version
 ```
-เปิดลิงก์นั้นในเบราว์เซอร์ (login บัญชีเดียวกัน) → กด **Enable** (เปิด HTTPS + Funnel) → กลับมาที่ terminal คำสั่งจะทำต่อเอง
+สคริปต์หา cloudflared ใน PATH และใน `C:\Program Files (x86)\cloudflared\` ให้เอง
+
+## 2. ไม่ต้องตั้งค่าอะไรเพิ่ม
+
+quick tunnel ไม่ต้อง login และไม่ต้องมีโดเมน
 
 ## 3. เตรียมระบบ
 
@@ -60,18 +54,16 @@ ALLOW_REGISTER=true          # false = ให้ใช้บัญชี demo �
 
 ที่ root ของ repo ใน Git Bash:
 ```bash
-sh scripts/tasks.sh funnel              # เว็บพอร์ต 3000
-PORT=3001 sh scripts/tasks.sh funnel    # ถ้าเว็บอยู่พอร์ตอื่น (Windows บางเครื่องจองพอร์ต 3000 ไว้)
+sh scripts/tasks.sh tunnel              # เว็บพอร์ต 3000
+PORT=3001 sh scripts/tasks.sh tunnel    # ถ้าเว็บอยู่พอร์ตอื่น (Windows บางเครื่องจองพอร์ต 3000 ไว้)
 ```
-สุดท้ายจะขึ้น `ลิงก์สำหรับแชร์ : https://....ts.net` · Funnel ทำงานเบื้องหลัง ปิดหน้าต่าง terminal ได้
+สุดท้ายจะขึ้น `ลิงก์สำหรับแชร์ : https://....trycloudflare.com` · **เปิดหน้าต่าง terminal นี้ค้างไว้** ปิดหน้าต่าง = ลิงก์ปิด
 
-ลองเปิดลิงก์จาก**มือถือที่ปิด WiFi ใช้เน็ตมือถือ** → login → ถาม 1 ข้อ · ครั้งแรกอาจรอ 1–2 นาทีให้ได้ใบรับรอง HTTPS
+ลองเปิดลิงก์จาก**มือถือที่ปิด WiFi ใช้เน็ตมือถือ** → login → ถาม 1 ข้อ · ลิงก์ใหม่อาจรอ 10–30 วินาทีให้ DNS ขึ้น
 
 ## 5. หลังเดโม: ปิดลิงก์
 
-```bash
-sh scripts/tasks.sh funnel off
-```
+กด **Ctrl+C** ในหน้าต่างที่รัน `tunnel` (หรือปิดหน้าต่างนั้น) · ลิงก์เดิมใช้ไม่ได้อีก รันใหม่จะได้ลิงก์ใหม่
 ลิงก์เป็นสาธารณะ ใครได้ลิงก์ก็เข้าได้ → ปิดทุกครั้งที่ไม่ใช้
 
 ## บอกคนในห้อง
@@ -95,10 +87,11 @@ sh scripts/tasks.sh funnel off
 
 | อาการ | วิธีแก้ |
 |---|---|
-| `ไม่พบ tailscale` | ติดตั้งตามขั้นที่ 1 หรือบอก path เอง: `TAILSCALE="/c/Program Files/Tailscale/tailscale.exe" sh scripts/tasks.sh funnel` |
-| ค้างที่ `Funnel is not enabled` | เปิดลิงก์ที่ขึ้นมาแล้วกด Enable (ขั้นที่ 2) |
+| `ไม่พบ cloudflared` | ติดตั้งตามขั้นที่ 1 หรือบอก path เอง: `CLOUDFLARED="/path/to/cloudflared.exe" sh scripts/tasks.sh tunnel` |
+| `ไม่ได้ลิงก์จาก cloudflared ภายใน 30 วินาที` | เน็ตบล็อกการเชื่อมต่อออกไป Cloudflare (บาง WiFi มหาวิทยาลัย) → ลองเน็ตมือถือ/hotspot |
 | `เปิด http://127.0.0.1:3000 ไม่ได้` | เว็บยังไม่เปิด หรืออยู่พอร์ตอื่น → ใส่ `PORT=...` |
 | เปิดลิงก์ได้แต่ login แล้วขึ้น "ติดต่อเซิร์ฟเวอร์ไม่ได้" | API ไม่ได้เปิดที่พอร์ต 8000 · เช็ก `curl http://127.0.0.1:8000/api/auth/config` |
 | ทุกคำถามได้ `SELECT COUNT(*)` | `.env` ยังเป็น `MODEL_BACKEND=fake` → แก้แล้ว restart API |
 | ขึ้น "ส่งคำขอถี่เกินไป" | รอ 1 นาที (เกิน limit ด้านบน) |
-| ลิงก์ใช้ไม่ได้หลังรีสตาร์ตเครื่อง | Tailscale ต้อง login อยู่ (ไอคอนในถาด) แล้วรันขั้นที่ 4 ใหม่ |
+| ลิงก์เก่าใช้ไม่ได้ | ลิงก์ปิดเมื่อปิดหน้าต่าง/รีสตาร์ตเครื่อง → รันขั้นที่ 4 ใหม่แล้วแชร์ลิงก์ใหม่ |
+| คำขอค้างแล้วขึ้น error 524 | เกิน 100 วินาทีของ Cloudflare (คิวยาวมาก) → ให้กดถามใหม่ |

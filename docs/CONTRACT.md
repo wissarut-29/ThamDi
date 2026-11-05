@@ -159,4 +159,4 @@ render(question: str, result: PipelineResult) -> str
 - path ที่เป็น relative (`MODEL_PATH`, `DATA_DIR`) นับจากโฟลเดอร์บนสุดของ repo ไม่ใช่โฟลเดอร์ที่รันคำสั่ง
 - `CORS_ORIGINS` คั่นด้วย `,` · ว่าง = ไม่อนุญาต origin ไหนเลย (ไม่ใช่ `*`)
 - `ALLOW_REGISTER` (ค่าเริ่มต้น `true`) เปิดให้สมัครบัญชีเองจากหน้าเว็บ · `MAX_USERS` (ค่าเริ่มต้น 200) จำนวนบัญชีสูงสุดรวม demo
-- นับ rate limit ตาม IP: คำขอที่มาจาก proxy ในเครื่อง (127.0.0.1 เช่น Tailscale Funnel) ใช้ IP ขวาสุดใน `X-Forwarded-For` ที่ไม่ใช่ loopback (ค่าที่ proxy ต่อท้าย ผู้ใช้ปลอมไม่ได้)
+- นับ rate limit ตาม IP: คำขอที่มาจาก proxy ในเครื่อง (127.0.0.1 เช่น Cloudflare tunnel) ใช้ IP ขวาสุดใน `X-Forwarded-For` ที่ไม่ใช่ loopback (ค่าที่ proxy ต่อท้าย ผู้ใช้ปลอมไม่ได้)

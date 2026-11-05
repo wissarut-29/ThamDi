@@ -26,7 +26,7 @@ services:
     build:
       context: apps/web
       args:
-        # ว่าง = browser เรียก /api ของเว็บ (พอร์ต 3000 พอร์ตเดียว เปิดผ่าน Tailscale Funnel ได้)
+        # ว่าง = browser เรียก /api ของเว็บ (พอร์ต 3000 พอร์ตเดียว เปิดผ่าน Cloudflare quick tunnel ได้)
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
         API_INTERNAL_URL: http://api:8000
     depends_on:

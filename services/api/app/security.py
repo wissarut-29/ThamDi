@@ -103,7 +103,7 @@ _LOOPBACK = {"127.0.0.1", "::1"}
 
 
 def client_ip(request: Request) -> str:
-    """IP ของผู้ใช้ · ถ้ามาจาก proxy ในเครื่องเดียวกัน (Tailscale Funnel → เว็บ Next.js → API)
+    """IP ของผู้ใช้ · ถ้ามาจาก proxy ในเครื่องเดียวกัน (Cloudflare tunnel → เว็บ Next.js → API)
     ใช้ X-Forwarded-For ไม่งั้นทุกคนที่เข้าผ่านลิงก์จะนับเป็น 127.0.0.1 เดียวกัน แล้วโดน rate limit รวมกันทั้งห้อง
     เชื่อ header นี้เฉพาะคำขอจาก loopback และเอาค่าขวาสุดที่ไม่ใช่ loopback (proxy ต่อค่าทางขวา
     ผู้ใช้ปลอมได้แค่ค่าทางซ้าย จึงใช้ค่าแรกไม่ได้)"""
