@@ -144,11 +144,17 @@ def preload() -> None:
         _local.load()
 
 
+# โมเดลตั้งต้นตาม docs/MODEL_CARD.md · ใช้เมื่อ config.json ไม่มี _name_or_path
+# (transformers 5 ไม่เขียนคีย์นี้ตอน export)
+DEFAULT_BASE_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
+
+
 def _local_info() -> dict:
     path = get_settings().MODEL_PATH
     base_model, version = "", ""
     try:
-        base_model = json.loads((path / "config.json").read_text(encoding="utf-8")).get("_name_or_path", "")
+        config = json.loads((path / "config.json").read_text(encoding="utf-8"))
+        base_model = config.get("_name_or_path") or DEFAULT_BASE_MODEL
     except (OSError, ValueError):
         pass
     try:
